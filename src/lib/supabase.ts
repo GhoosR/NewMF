@@ -27,13 +27,10 @@ if (!supabaseAnonKey.includes('.')) {
 export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   auth: {
     persistSession: true,
-    autoRefreshToken: true,
-    detectSessionInUrl: true,
-    flowType: 'pkce',
-    debug: false,
     autoRefreshToken: false,
-    persistSession: false,
-    detectSessionInUrl: false
+    detectSessionInUrl: false,
+    flowType: 'pkce',
+    debug: false
   },
   db: {
     schema: 'public'
