@@ -7,6 +7,57 @@ const supabase = createClient(
 
 async function fixDatabase() {
   try {
+    // 0. Ensure username column exists in users table
+    const { error: addUsernameError } = await supabase.rpc('execute_sql', {
+      sql: `
+        -- Add username column if it doesn't exist
+        DO $$
+        BEGIN
+          IF NOT EXISTS (
+            SELECT 1 FROM information_schema.columns
+            WHERE table_name = 'users' AND column_name = 'username'
+          ) THEN
+            ALTER TABLE users ADD COLUMN username text;
+          END IF;
+        END $$;
+
+        -- Ensure username column is NOT NULL and has a unique constraint
+        DO $$
+        BEGIN
+          -- First, update any NULL usernames with a default value
+          UPDATE users SET username = 'user_' || substr(id::text, 1, 8) WHERE username IS NULL;
+          
+          -- Make the column NOT NULL if it isn't already
+          IF EXISTS (
+            SELECT 1 FROM information_schema.columns
+            WHERE table_name = 'users' AND column_name = 'username' AND is_nullable = 'YES'
+          ) THEN
+            ALTER TABLE users ALTER COLUMN username SET NOT NULL;
+          END IF;
+        EXCEPTION
+          WHEN others THEN
+            -- If there are any issues, just continue
+            NULL;
+        END $$;
+
+        -- Ensure unique constraint exists
+        DO $$
+        BEGIN
+          IF NOT EXISTS (
+            SELECT 1 FROM information_schema.table_constraints
+            WHERE table_name = 'users' AND constraint_name = 'users_username_key'
+          ) THEN
+            ALTER TABLE users ADD CONSTRAINT users_username_key UNIQUE (username);
+          END IF;
+        EXCEPTION
+          WHEN others THEN
+            -- If constraint already exists or other issues, continue
+            NULL;
+        END $$;
+      `
+    });
+    if (addUsernameError) console.log('Add username column error:', addUsernameError);
+
     // 1. Fix the update_conversation_last_viewed function
     const { error: dropFuncError } = await supabase.rpc('drop_function_if_exists', {
       function_name: 'update_conversation_last_viewed',
