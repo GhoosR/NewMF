@@ -1,0 +1,52 @@
+functionsDirectory = "C:\\Users\\Rik\\Downloads\\project-bolt-mf\\project\\netlify\\functions"
+functionsDirectoryOrigin = "config"
+redirectsOrigin = "config"
+headers = []
+
+[build]
+publish = "C:\\Users\\Rik\\Downloads\\project-bolt-mf\\project\\dist"
+publishOrigin = "config"
+commandOrigin = "config"
+command = "npm run build"
+functions = "C:\\Users\\Rik\\Downloads\\project-bolt-mf\\project\\netlify\\functions"
+
+[build.environment]
+NODE_VERSION = "18"
+
+[build.processing]
+
+[build.processing.css]
+
+[build.processing.html]
+
+[build.processing.images]
+
+[build.processing.js]
+
+[build.services]
+
+[functions]
+
+[functions.emails]
+included_files = ["./emails/**"]
+
+[functions."*"]
+
+[[plugins]]
+origin = "ui"
+package = "@netlify/plugin-emails"
+pinned_version = "1"
+
+[plugins.inputs]
+
+[[redirects]]
+from = "/*"
+to = "/index.html"
+status = 200.0
+force = false
+
+[redirects.query]
+
+[redirects.conditions]
+
+[redirects.headers]

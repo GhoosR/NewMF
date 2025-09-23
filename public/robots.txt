@@ -1,0 +1,27 @@
+# Allow all crawlers
+User-agent: *
+
+# Disallow crawling of private/sensitive pages
+Disallow: /chat/
+Disallow: /profile/
+Disallow: /admin/
+Disallow: /subscription/
+Disallow: /api/
+Disallow: /.netlify/
+
+# Allow crawling of public pages
+Allow: /
+Allow: /practitioners/
+Allow: /events/
+Allow: /venues/
+Allow: /jobs/
+Allow: /courses/
+Allow: /articles/
+Allow: /recipes/
+Allow: /communities/
+Allow: /tools/nutrition/
+Allow: /tools/plant-identifier/
+Allow: /corporate-wellness/
+
+# Sitemap location
+Sitemap: https://mindfulfamily.co/sitemap.xml

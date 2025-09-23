@@ -1,0 +1,21 @@
+export const amenities = [
+  { value: 'wifi', label: 'Wi-Fi' },
+  { value: 'air_conditioning', label: 'Air Conditioning' },
+  { value: 'swimming_pool', label: 'Swimming Pool' },
+  { value: 'fireplace', label: 'Fireplace' },
+  { value: 'parking', label: 'Parking' },
+  { value: 'sauna', label: 'Sauna' },
+  { value: 'hot_tub', label: 'Hot Tub' },
+  { value: 'wheelchair_accessible', label: 'Wheelchair Accessibility' },
+  { value: 'lockers', label: 'Lockers' },
+  { value: 'steam_room', label: 'Steam Room' },
+  { value: 'barbeque', label: 'Barbeque' },
+  { value: 'billiards', label: 'Billiards Table' },
+  { value: 'ping_pong', label: 'Ping Pong Table' },
+  { value: 'playground', label: 'Kids Playground' },
+  { value: 'tennis', label: 'Tennis Court' },
+  { value: 'yoga_mats', label: 'Yoga Mats' },
+  { value: 'yoga_deck', label: 'Yoga Deck' },
+  { value: 'live_music', label: 'Live Music' },
+  { value: 'taxi', label: 'Taxi' }
+];
