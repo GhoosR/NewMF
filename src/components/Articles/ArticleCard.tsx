@@ -5,6 +5,7 @@ import { Avatar } from '../Profile/Avatar';
 import { Username } from '../Profile/Username';
 import { formatDate } from '../../lib/utils/dateUtils';
 import { formatCategoryName } from '../../lib/utils/formatters';
+import { useAdmin } from '../../lib/hooks/useAdmin';
 
 interface Article {
   id: string;
@@ -30,6 +31,8 @@ interface ArticleCardProps {
 }
 
 export function ArticleCard({ article, featured = false }: ArticleCardProps) {
+  const { isAdmin } = useAdmin();
+  
   return (
     <article className={`bg-white rounded-xl shadow-sm overflow-hidden hover:shadow-md transition-all duration-300 group ${
       featured ? 'lg:col-span-2' : ''
@@ -83,10 +86,12 @@ export function ArticleCard({ article, featured = false }: ArticleCardProps) {
                 <Clock className="h-3 w-3 mr-1" />
                 {article.read_time}
               </span>
-              <span className="flex items-center">
-                <Eye className="h-3 w-3 mr-1" />
-                {article.view_count}
-              </span>
+              {isAdmin && (
+                <span className="flex items-center">
+                  <Eye className="h-3 w-3 mr-1" />
+                  {article.view_count}
+                </span>
+              )}
             </div>
           </div>
         </div>

@@ -1,59 +1,62 @@
--- Enable RLS on conversations table if not already enabled
+-- Fix RLS policies for conversations table
+-- Ensure the create_or_get_direct_chat function can work properly
+
+-- First, ensure RLS is enabled
 ALTER TABLE conversations ENABLE ROW LEVEL SECURITY;
 
--- Drop existing policies
-DROP POLICY IF EXISTS "Users can view their conversations" ON conversations;
-DROP POLICY IF EXISTS "Users can create direct conversations" ON conversations;
-DROP POLICY IF EXISTS "Users can create group conversations" ON conversations;
-DROP POLICY IF EXISTS "Users can update their conversations" ON conversations;
+-- Drop existing policies to start fresh
+DROP POLICY IF EXISTS "view_conversations" ON conversations;
+DROP POLICY IF EXISTS "create_conversations" ON conversations;
+DROP POLICY IF EXISTS "update_conversations" ON conversations;
+DROP POLICY IF EXISTS "admin_can_update_group" ON conversations;
+DROP POLICY IF EXISTS "group_admin_update" ON conversations;
+DROP POLICY IF EXISTS "direct_chat_update" ON conversations;
+DROP POLICY IF EXISTS "last_viewed_update" ON conversations;
+DROP POLICY IF EXISTS "admin_group_updates" ON conversations;
+DROP POLICY IF EXISTS "participant_updates" ON conversations;
 
--- Create policies for conversations table
-CREATE POLICY "Users can view their conversations"
+-- Create clean, simple policies
+
+-- View policy - users can see conversations they participate in
+CREATE POLICY "view_conversations"
 ON conversations
 FOR SELECT
-USING (auth.uid() = ANY(participant_ids));
+USING (
+  auth.uid() = ANY(participant_ids)
+);
 
-CREATE POLICY "Users can create direct conversations"
+-- Create policy - users can create conversations they participate in
+CREATE POLICY "create_conversations"
 ON conversations
 FOR INSERT
 WITH CHECK (
-  type = 'direct'
-  AND array_length(participant_ids, 1) = 2
-  AND auth.uid() = ANY(participant_ids)
-  AND auth.uid() = created_by
+  auth.uid() = created_by AND
+  auth.uid() = ANY(participant_ids) AND
+  (
+    (type = 'direct' AND array_length(participant_ids, 1) = 2) OR
+    (type = 'group' AND array_length(participant_ids, 1) >= 2)
+  )
 );
 
-CREATE POLICY "Users can create group conversations"
-ON conversations
-FOR INSERT
-WITH CHECK (
-  type = 'group'
-  AND array_length(participant_ids, 1) >= 2
-  AND array_length(participant_ids, 1) <= COALESCE(max_participants, 5)
-  AND auth.uid() = ANY(participant_ids)
-  AND auth.uid() = created_by
-  AND auth.uid() = admin_id
-);
-
-CREATE POLICY "Users can update their conversations"
+-- Update policy - participants can update conversations
+CREATE POLICY "update_conversations"
 ON conversations
 FOR UPDATE
 USING (
   auth.uid() = ANY(participant_ids)
 )
 WITH CHECK (
-  -- Only allow updating last_message, last_message_at, last_viewed_by, last_viewed_at
+  auth.uid() = ANY(participant_ids) AND
   (
-    (OLD.last_message IS DISTINCT FROM NEW.last_message) OR
-    (OLD.last_message_at IS DISTINCT FROM NEW.last_message_at) OR
-    (OLD.last_viewed_by IS DISTINCT FROM NEW.last_viewed_by) OR
-    (OLD.last_viewed_at IS DISTINCT FROM NEW.last_viewed_at)
+    -- For direct chats, any participant can update
+    (type = 'direct') OR
+    -- For group chats, admin can update everything, participants can update last_viewed
+    (type = 'group' AND (
+      auth.uid() = admin_id OR
+      auth.uid() = last_viewed_by
+    ))
   )
-  -- Ensure these fields don't change
-  AND OLD.type = NEW.type
-  AND OLD.participant_ids = NEW.participant_ids
-  AND OLD.created_by = NEW.created_by
-  AND OLD.admin_id = NEW.admin_id
-  AND OLD.max_participants = NEW.max_participants
 );
 
+-- Grant necessary permissions to the function
+GRANT EXECUTE ON FUNCTION create_or_get_direct_chat(uuid, uuid) TO authenticated;

@@ -135,24 +135,23 @@ export function CreateGroupChat({ onClose, onSuccess }: CreateGroupChatProps) {
         throw new Error('Group cannot have more than 5 participants');
       }
 
-      const { data: conversation, error: createError } = await supabase
-        .from('conversations')
-        .insert({
-          type: 'group',
-          name,
-          image_url: imageUrl,
-          created_by: user.id,
-          admin_id: user.id,
-          max_participants: 5,
-          participant_ids: uniqueParticipantIds,
-          last_message: `${username} created the group`,
-          last_message_at: new Date().toISOString()
-        })
-        .select()
-        .single();
+      // Use the new create_group_chat function
+      const { data: result, error: createError } = await supabase
+        .rpc('create_group_chat', {
+          group_name: name,
+          group_description: null,
+          group_image_url: imageUrl,
+          participant_user_ids: selectedUsers.map(u => u.id),
+          is_public_group: false
+        });
 
       if (createError) throw createError;
-      onSuccess(conversation.id);
+      
+      if (!result.success) {
+        throw new Error(result.error || 'Failed to create group chat');
+      }
+
+      onSuccess(result.conversation.id);
     } catch (err: any) {
       console.error('Error creating group chat:', err);
       setError(err.message);

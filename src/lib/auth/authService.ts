@@ -90,31 +90,20 @@ export async function signUp(
 }
 
 export async function signIn(email: string, password: string) {
-  try {
-    console.log('Attempting sign in with:', { email });
-    
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
+  const { error } = await supabase.auth.signInWithPassword({
+    email,
+    password,
+  });
 
-    if (error) {
-      console.error('Sign in error:', error);
-      // Handle specific error cases
-      if (error.message.includes('Invalid login credentials')) {
-        throw new Error('Invalid email or password');
-      }
-      if (error.message.includes('Email not confirmed')) {
-        throw new Error('Please confirm your email address before signing in');
-      }
-      throw error;
+  if (error) {
+    // Handle specific error cases
+    if (error.message.includes('Invalid login credentials')) {
+      throw new Error('Invalid email or password');
     }
-
-    console.log('Sign in successful:', { user: data.user?.id });
-    return data;
-  } catch (err) {
-    console.error('Sign in error:', err);
-    throw err;
+    if (error.message.includes('Email not confirmed')) {
+      throw new Error('Please confirm your email address before signing in');
+    }
+    throw error;
   }
 }
 
@@ -123,17 +112,9 @@ export async function isProfessional(): Promise<boolean> {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return false;
 
-    // Get user details including subscription status and user type
-    const { data: userData, error } = await supabase
-      .from('users')
-      .select('user_type, subscription_status')
-      .eq('id', user.id)
-      .maybeSingle();
-
-    if (error || !userData) return false;
-
-    // Check both user type and subscription status
-    return userData.user_type === 'professional' && userData.subscription_status === 'active';
+    // Use the new unified subscription system
+    const { isProfessional } = await import('../subscription');
+    return await isProfessional(user.id);
   } catch (error) {
     console.error('Error checking professional status:', error);
     return false;

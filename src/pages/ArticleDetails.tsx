@@ -32,8 +32,8 @@ interface Article {
 
 export function ArticleDetails() {
   const { slug } = useParams<{ slug: string }>();
-  const navigate = useNavigate();
   const { isAdmin } = useAdmin();
+  const navigate = useNavigate();
   const [article, setArticle] = useState<Article | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -349,10 +349,12 @@ export function ArticleDetails() {
                   <Clock className="h-4 w-4 mr-1" />
                   {article.read_time}
                 </span>
-                <span className="flex items-center">
-                  <Eye className="h-4 w-4 mr-1" />
-                  {article.view_count} views
-                </span>
+                {isAdmin && (
+                  <span className="flex items-center">
+                    <Eye className="h-4 w-4 mr-1" />
+                    {article.view_count} views
+                  </span>
+                )}
               </div>
             </div>
 

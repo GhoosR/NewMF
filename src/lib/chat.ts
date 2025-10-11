@@ -190,19 +190,30 @@ export async function sendMessage(conversationId: string, content: string) {
       for (const participantId of conversation.participant_ids) {
         if (participantId === user.id) continue;
 
-        const { data: shouldCreate, error: checkError } = await supabase
-          .rpc('should_create_direct_chat', {
-            user_id_1: user.id,
-            user_id_2: participantId
-          });
+        try {
+          const { data: shouldCreate, error: checkError } = await supabase
+            .rpc('should_create_direct_chat', {
+              user_id_1: user.id,
+              user_id_2: participantId
+            });
 
-        if (checkError) {
-          console.error('Error checking direct chat status:', checkError);
+          if (checkError) {
+            console.error('Error checking direct chat status:', checkError);
+            // If the function doesn't exist (404 error), skip the check
+            if (checkError.code === 'PGRST204' || checkError.message?.includes('404')) {
+              console.warn('should_create_direct_chat function not found, skipping check');
+              continue;
+            }
+            continue;
+          }
+
+          if (shouldCreate) {
+            throw new Error('Direct chat creation between group members is not allowed');
+          }
+        } catch (error) {
+          console.error('Error in direct chat check:', error);
+          // Continue with message sending if the check fails
           continue;
-        }
-
-        if (shouldCreate) {
-          throw new Error('Direct chat creation between group members is not allowed');
         }
       }
     }

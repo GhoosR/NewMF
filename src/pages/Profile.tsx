@@ -11,6 +11,7 @@ import { BookmarksTab } from './profile/BookmarksTab';
 import { CoursesTab } from './profile/CoursesTab';
 import { RecipesTab } from './profile/RecipesTab';
 import { PaymentSettingsTab } from './profile/PaymentSettings';
+import { BadgesTab } from '../components/Profile/BadgesTab';
 
 // Array of gradient backgrounds
 const gradients = [
@@ -132,7 +133,7 @@ export default function Profile() {
           isEditable={isOwnProfile}
         />
         <div className="mt-6">
-          <ProfileTabs userId={profile.id} username={profile.username} />
+          <ProfileTabs userId={profile.id} username={profile.username} isOwnProfile={isOwnProfile} />
           <div className="mt-6">
             <Routes>
               <Route path="listings/*" element={<ListingsTab userId={profile.id} />} />
@@ -140,6 +141,7 @@ export default function Profile() {
               {isOwnProfile && <Route path="bookmarks" element={<BookmarksTab userId={profile.id} />} />}
               <Route path="recipes" element={<RecipesTab userId={profile.id} />} />
               {isAdmin && <Route path="courses" element={<CoursesTab userId={profile.id} />} />}
+              {isOwnProfile && <Route path="badges" element={<BadgesTab userId={profile.id} />} />}
               {isOwnProfile && (
                 <Route path="payment-settings" element={<PaymentSettingsTab userId={profile.id} />} />
               )}

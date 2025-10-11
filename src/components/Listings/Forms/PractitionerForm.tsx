@@ -452,110 +452,60 @@ export function PractitionerForm({ onClose, onSuccess, editId }: PractitionerFor
   };
 
   return (
-    <Modal title="Add Practitioner Listing" onClose={onClose} fullScreenOnMobile={true}>
-      {/* Progress Steps */}
-      <div className="mb-8">
-        {/* Desktop Steps */}
-        <div className="hidden md:block">
-          <div className="flex justify-between">
-            {steps.map((step, index) => {
-              const Icon = step.icon;
-              const isActive = currentStep === step.id;
-              const isPast = steps.findIndex(s => s.id === currentStep) > index;
-              
-              return (
-                <div key={step.id} className="flex items-center">
-                  <div className={`
-                    flex items-center justify-center w-12 h-12 rounded-full border-2 transition-colors p-3
-                    ${isActive || isPast 
-                      ? 'border-accent-text bg-accent-text text-white' 
-                      : 'border-accent-text/20 text-content/60'
-                    }
-                  `}>
-                    <Icon className="h-5 w-5" />
-                  </div>
-                  {index < steps.length - 1 && (
-                    <div className={`w-full h-0.5 mx-2 ${
-                      isPast ? 'bg-accent-text' : 'bg-accent-text/20'
-                    }`} />
-                  )}
-                </div>
-              );
-            })}
-          </div>
-          <div className="flex justify-between mt-2">
-            {steps.map((step) => (
-              <span key={step.id} className="text-xs text-content/60 w-20 text-center">
+    <Modal title="Add Practitioner Listing" onClose={onClose}>
+      <div className="max-w-2xl mx-auto">
+        {/* Progress Steps */}
+        <div className="flex items-center justify-between mb-8">
+          {steps.map((step, index) => (
+            <div key={step.id} className="flex items-center">
+              <div className={`flex items-center justify-center w-8 h-8 rounded-full text-sm font-medium ${
+                currentStep === step.id
+                  ? 'bg-accent-text text-white'
+                  : index < steps.findIndex(s => s.id === currentStep)
+                  ? 'bg-green-500 text-white'
+                  : 'bg-gray-200 text-gray-600'
+              }`}>
+                {index + 1}
+              </div>
+              <span className={`ml-2 text-sm ${
+                currentStep === step.id ? 'text-accent-text font-medium' : 'text-gray-500'
+              }`}>
                 {step.title}
               </span>
-            ))}
-          </div>
+              {index < steps.length - 1 && (
+                <div className="w-8 h-0.5 bg-gray-200 mx-4" />
+              )}
+            </div>
+          ))}
         </div>
-
-        {/* Mobile Steps */}
-        <div className="md:hidden flex items-center justify-between mb-4">
-          <span className="text-sm text-content/60">Step {steps.findIndex(s => s.id === currentStep) + 1} of {steps.length}</span>
-          <span className="text-sm font-medium text-content">{steps.find(s => s.id === currentStep)?.title}</span>
-        </div>
-        <div className="md:hidden bg-accent-base/10 rounded-full h-2 mb-6">
-          <div 
-            className="h-full bg-accent-text rounded-full transition-all duration-300"
-            style={{ 
-              width: `${((steps.findIndex(s => s.id === currentStep) + 1) / steps.length) * 100}%` 
-            }}
-          />
-        </div>
-      </div>
 
       {/* Step Content */}
       <div className="mb-8">
         {renderStepContent()}
       </div>
 
-      {error && (
-        <div className="mb-6 text-red-600 text-sm bg-red-50 p-4 rounded-lg">
-          {error}
-        </div>
-      )}
-
-      {/* Navigation Buttons */}
-      <div className="flex justify-between">
-        {currentStep !== 'basics' ? (
-          <button
-            type="button"
-            onClick={handleBack}
-            className="flex items-center px-4 py-2 text-sm font-medium text-content hover:text-content/80"
-          >
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Back
-          </button>
-        ) : (
-          <div></div>
+        {/* Error Message */}
+        {error && (
+          <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-md">
+            <p className="text-sm text-red-600">{error}</p>
+          </div>
         )}
-        
-        <div className="flex space-x-3">
+
+        {/* Navigation Buttons */}
+        <div className="flex justify-between">
           <button
-            type="button"
-            onClick={onClose}
-            className="px-4 py-2 text-sm font-medium text-content hover:text-content/80"
+            onClick={handleBack}
+            disabled={currentStep === 'basics'}
+            className="px-4 py-2 text-gray-600 hover:text-gray-800 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            Cancel
+            Back
           </button>
           <button
             onClick={handleNext}
-            disabled={loading || !isStepValid()}
-            className="flex items-center px-6 py-2 text-sm font-medium text-white bg-accent-text rounded-md hover:bg-accent-text/90 disabled:opacity-50"
+            disabled={!isStepValid() || loading}
+            className="px-6 py-2 bg-accent-text text-white rounded-md hover:bg-accent-text/90 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {loading ? (
-              'Creating...'
-            ) : currentStep === 'media' ? (
-              editId ? 'Update Listing' : 'Create Listing'
-            ) : (
-              <>
-                Next
-                <ArrowRight className="h-4 w-4 ml-2" />
-              </>
-            )}
+            {loading ? 'Creating...' : currentStep === 'media' ? 'Create Listing' : 'Next'}
           </button>
         </div>
       </div>

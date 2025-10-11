@@ -1,14 +1,14 @@
-functionsDirectory = "C:\\Users\\Rik\\Downloads\\project-bolt-mf\\project\\netlify\\functions"
+functionsDirectory = "/Users/ghoos/Downloads/project-bolt-mf/project/netlify/functions"
 functionsDirectoryOrigin = "config"
 redirectsOrigin = "config"
 headers = []
 
 [build]
-publish = "C:\\Users\\Rik\\Downloads\\project-bolt-mf\\project\\dist"
+publish = "/Users/ghoos/Downloads/project-bolt-mf/project/dist"
 publishOrigin = "config"
 commandOrigin = "config"
 command = "npm run build"
-functions = "C:\\Users\\Rik\\Downloads\\project-bolt-mf\\project\\netlify\\functions"
+functions = "/Users/ghoos/Downloads/project-bolt-mf/project/netlify/functions"
 
 [build.environment]
 NODE_VERSION = "18"

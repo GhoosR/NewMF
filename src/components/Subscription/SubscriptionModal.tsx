@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { X, Sparkles, Check, Crown, Zap } from 'lucide-react';
 import { subscriptionPlans, createCheckoutSession, redirectToCheckout, formatPrice } from '../../lib/stripe/subscriptions';
 
@@ -30,6 +30,11 @@ export function SubscriptionModal({ onClose, onSuccess, selectedPlan = 'monthly'
 
   const features = [
     {
+      icon: Zap,
+      title: 'Live Stream Access',
+      description: 'Join daily wellness sessions and expert talks'
+    },
+    {
       icon: Sparkles,
       title: 'Create Listings',
       description: 'List your services, events, and venues'
@@ -38,11 +43,6 @@ export function SubscriptionModal({ onClose, onSuccess, selectedPlan = 'monthly'
       icon: Crown,
       title: 'Build Communities',
       description: 'Create and manage your own wellness communities'
-    },
-    {
-      icon: Zap,
-      title: 'Live Stream Access',
-      description: 'Join daily wellness sessions and expert talks'
     },
     {
       icon: Check,
@@ -68,7 +68,7 @@ export function SubscriptionModal({ onClose, onSuccess, selectedPlan = 'monthly'
             </div>
             <h2 className="text-3xl font-bold mb-2">Upgrade to Premium</h2>
             <p className="text-white/90 text-lg">
-              Unlock all features and grow your wellness business
+            Unlock all features to enhance your wellness journey
             </p>
           </div>
         </div>

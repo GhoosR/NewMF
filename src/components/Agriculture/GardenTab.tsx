@@ -364,7 +364,6 @@ export function GardenTab({ fieldId, fieldCountry }: GardenTabProps) {
                   <button
                     onClick={() => handleHarvest(crop.id, crop.crop_name, crop.title)}
                     disabled={harvesting === crop.id}
-                    onClick={() => handleHarvest(crop.id, crop.crop_name, crop.title)}
                     className="w-full flex items-center justify-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors shadow-sm"
                   >
                     <Scissors className="h-4 w-4 mr-2" />

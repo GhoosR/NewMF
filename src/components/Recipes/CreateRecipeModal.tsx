@@ -4,6 +4,7 @@ import { supabase } from '../../lib/supabase';
 import { FileInput } from '../Listings/Forms/FormComponents/FileInput';
 import { TextArea } from '../Listings/Forms/FormComponents/TextArea';
 import { MultiSelect } from '../Listings/Forms/FormComponents/MultiSelect';
+import { generateSlug } from '../../lib/utils/slugUtils';
 import type { RecipeFormData } from '../../types/recipes';
 
 interface CreateRecipeModalProps {
@@ -88,6 +89,7 @@ export function CreateRecipeModal({ onClose, onSuccess }: CreateRecipeModalProps
         .insert([{
           user_id: user.id,
           title: formData.title,
+          slug: generateSlug(formData.title),
           description: formData.description,
           ingredients: formData.ingredients.filter(i => i.trim()),
           instructions: formData.instructions.filter(i => i.trim()),

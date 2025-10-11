@@ -79,6 +79,11 @@ export function ListingsTab({ userId }: ListingsTabProps) {
                 username,
                 full_name,
                 avatar_url
+              ),
+              community:communities (
+                id,
+                name,
+                avatar_url
               )
             `)
             .eq('user_id', userId);

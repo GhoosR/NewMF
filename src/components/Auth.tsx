@@ -19,7 +19,6 @@ export function Auth({ onClose }: AuthProps) {
   const [mode, setMode] = useState<Step>('signin');
   const [error, setError] = useState('');
   const [resetSent, setResetSent] = useState(false);
-  const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [resetEmail, setResetEmail] = useState('');
   const modalRef = useRef<HTMLDivElement>(null);
 
@@ -69,10 +68,6 @@ export function Auth({ onClose }: AuthProps) {
       }
     }
 
-    if (mode === 'signup' && !acceptedTerms) {
-      setError('Please accept the Terms of Service to continue');
-      return false;
-    }
 
     return true;
   };
@@ -132,7 +127,7 @@ export function Auth({ onClose }: AuthProps) {
           </div>
 
           {/* Main Content */}
-          <div className="flex-1 max-w-md mx-auto w-full flex flex-col justify-center py-4 md:py-0">
+          <div className="flex-1 max-w-md mx-auto w-full flex flex-col justify-start md:justify-center py-4 md:py-0 min-h-0">
             <h1 className="text-4xl md:text-5xl font-gelica font-bold mb-4">
               {mode === 'signin' ? 'Welcome back' : mode === 'signup' ? 'Get started' : 'Reset Password'}
             </h1>
@@ -155,7 +150,7 @@ export function Auth({ onClose }: AuthProps) {
               )}
             </p>
 
-            <form onSubmit={handleAuth} className="space-y-6">
+            <form onSubmit={handleAuth} className="space-y-6 pb-8 md:pb-0">
               {mode === 'signup' && (
                 <div>
                   <label className="block text-sm font-medium text-content mb-1.5">Username</label>
@@ -235,38 +230,28 @@ export function Auth({ onClose }: AuthProps) {
               )}
 
               {mode === 'signup' && (
-                <div className="flex items-start space-x-2">
-                  <div className="flex items-center h-5">
-                    <input
-                      id="terms"
-                      type="checkbox"
-                      checked={acceptedTerms}
-                      onChange={(e) => setAcceptedTerms(e.target.checked)}
-                      className="h-4 w-4 rounded border-accent-text/20 text-accent-text focus:ring-accent-text"
-                    />
-                  </div>
-                  <div className="ml-3 text-sm">
-                    <label htmlFor="terms" className="text-content/80">
-                      I accept the{' '}
-                      <Link
-                        to="/terms"
-                        target="_blank"
-                        className="text-accent-text hover:text-accent-text/80"
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        Terms of Service
-                      </Link>
-                      {' '}and{' '}
-                      <Link
-                        to="/privacy-policy"
-                        target="_blank"
-                        className="text-accent-text hover:text-accent-text/80"
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        Privacy Policy
-                      </Link>
-                    </label>
-                  </div>
+                <div className="mb-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
+                  <p className="text-sm text-content/80 leading-relaxed">
+                    By creating an account, you agree to our{' '}
+                    <Link
+                      to="/terms"
+                      target="_blank"
+                      className="text-accent-text hover:text-accent-text/80 font-medium underline"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      Terms of Service
+                    </Link>
+                    {' '}and{' '}
+                    <Link
+                      to="/privacy-policy"
+                      target="_blank"
+                      className="text-accent-text hover:text-accent-text/80 font-medium underline"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      Privacy Policy
+                    </Link>
+                    .
+                  </p>
                 </div>
               )}
 

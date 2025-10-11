@@ -40,15 +40,15 @@ export function AboutUs() {
           
           <div className="space-y-6 text-lg text-content/80">
             <p>
-              We're Mary and Rik, the Founders of Mindful Family—a dream brought to life through love, intention, and a shared passion for holistic wellness. What started as a spark of inspiration quickly became a vibrant, soul-led platform designed to support and uplift individuals and families on their journey toward well-being.
+              We're Mary and Rik, the Founders of Mindful Family - a dream brought to life through love, intention, and a shared passion for holistic wellness. What started as a spark of inspiration quickly became a vibrant, soul-led platform designed to support and uplift individuals and families on their journey towards well-being.
             </p>
             
             <p>
-              Our journey began with a simple idea—to bring together various aspects of natural and holistic living into one cohesive platform. We wanted to create something different. Something complete. Something that felt like home for the wellness world.
+              Our journey began with a simple idea - to bring together various aspects of natural and holistic living into one cohesive platform. We wanted to create something different. Something complete. Something that felt like home for the wellness world.
             </p>
 
             <p>
-              Whether you're looking for a Naturopathic Practitioner Directory, a Job Board for mindful work, a Learning Hub with courses and workshops, or a place to share plant-based recipes, tune into livestreams, join or promote your retreats and events, explore seasonal living and foraging tools, or simply connect with like-hearted people through our conscious social media and news feed—you've found it. This is your place.
+              Whether you're looking for a Naturopathic Practitioner Directory, a Job Board for mindful work, a Learning Hub with courses and workshops, or a place to share plant-based recipes, tune into livestreams, join or promote your retreats and events, explore seasonal living and foraging tools, or simply connect with like-hearted people through our conscious social media and news feed - you've found it. This is your place.
             </p>
           </div>
         </div>
@@ -61,14 +61,14 @@ export function AboutUs() {
             <div className="bg-white rounded-xl p-8 shadow-sm">
               <h2 className="text-3xl font-gelica font-bold text-content mb-6">Mission Statement</h2>
               <p className="text-lg text-content/80">
-                Our mission is to be the heart and home of holistic wellness—bringing everything together in one conscious, accessible space. We're here to empower, educate and inspire individuals and families to live more mindfully, connect more deeply, and thrive in harmony with body, mind and soul.
+                Our mission is to be the heart and home of holistic wellness - bringing everything together in one conscious, accessible space. We're here to empower, educate and inspire individuals and families to live more mindfully, connect more deeply, and thrive in harmony with body, mind and soul.
               </p>
             </div>
 
             <div className="bg-white rounded-xl p-8 shadow-sm">
               <h2 className="text-3xl font-gelica font-bold text-content mb-6">Vision Statement</h2>
               <p className="text-lg text-content/80">
-                Our vision is to create and nurture a world where holistic well-being is a fundamental part of everybody's everyday life. A world where everything you need is in one place—supporting a global community to grow, heal, and flourish, together.
+                Our vision is to create and nurture a world where holistic well-being is a fundamental part of everybody's everyday life. A world where everything you need is in one place - supporting a global community to grow, heal, and flourish, together.
               </p>
             </div>
           </div>
@@ -151,7 +151,7 @@ export function AboutUs() {
             Join Our Mindful Community
           </h2>
           <p className="text-xl text-content/80 mb-8">
-            Step into a space where wellness meets community, and everything you need is under one roof. This is your sanctuary, your resource, your inspiration—Welcome to Mindful Family.
+            Step into a space where wellness meets community, and everything you need is under one roof. This is your sanctuary, your resource, your inspiration -Welcome to Mindful Family.
           </p>
           <button
             onClick={() => window.dispatchEvent(new CustomEvent('show-auth'))}

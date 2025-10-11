@@ -69,7 +69,7 @@ export function SearchBar({ onResultClick }: SearchBarProps) {
       case 'event': path = `/events/${result.slug}`; break;
       case 'venue': path = `/venues/${result.slug}`; break;
       case 'course': path = `/courses/${result.id}`; break;
-      case 'recipe': path = `/recipes/${result.id}`; break;
+      case 'recipe': path = `/recipes/${result.slug}`; break;
       case 'user': path = `/profile/${result.username}/listings`; break;
     }
     navigate(path);

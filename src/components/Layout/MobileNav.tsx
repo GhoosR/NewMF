@@ -71,7 +71,7 @@ export function MobileNav({ isOpen, onClose }: MobileNavProps) {
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 z-50">
-      <div className="bg-white h-full w-full flex flex-col">
+      <div className="bg-white h-full w-full flex flex-col pb-16">
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-[#8DA847]/10">
           <Link 
@@ -176,7 +176,7 @@ export function MobileNav({ isOpen, onClose }: MobileNavProps) {
         </div>
 
         {/* Bottom Actions */}
-        <div className="p-6 border-t border-[#8DA847]/10 bg-white animate-fade-in">
+        <div className="mt-auto p-6 border-t border-[#8DA847]/10 bg-white animate-fade-in">
           {profile ? (
             <button
               onClick={handleLogout}

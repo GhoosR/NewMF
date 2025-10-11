@@ -11,11 +11,32 @@ AS $$
 DECLARE
   v_conversation conversations%ROWTYPE;
   v_participant_id uuid;
+  v_sender_username text;
+  v_sender_avatar_url text;
 BEGIN
   -- Get conversation details
   SELECT * INTO v_conversation
   FROM conversations
   WHERE id = NEW.conversation_id;
+
+  -- Exit early if conversation not found
+  IF v_conversation.id IS NULL THEN
+    RETURN NEW;
+  END IF;
+
+  -- Get sender information
+  SELECT username, avatar_url INTO v_sender_username, v_sender_avatar_url
+  FROM users
+  WHERE id = NEW.sender_id;
+
+  -- Exit early if sender not found
+  IF v_sender_username IS NULL THEN
+    RETURN NEW;
+  END IF;
+
+  -- Log conversation type for debugging
+  RAISE NOTICE 'Processing message for conversation type: %, name: %, sender: %, participant_count: %, conversation_id: %', 
+    v_conversation.type, v_conversation.name, v_sender_username, array_length(v_conversation.participant_ids, 1), NEW.conversation_id;
 
   -- Create notifications for all participants except the sender
   FOREACH v_participant_id IN ARRAY v_conversation.participant_ids
@@ -25,35 +46,52 @@ BEGIN
       CONTINUE;
     END IF;
 
-    -- Check if there's already a notification for this conversation (read or unread)
-    -- If exists, update it; otherwise create new one
-    IF EXISTS (
-      SELECT 1 FROM notifications
-      WHERE user_id = v_participant_id
-      AND type = CASE WHEN v_conversation.type = 'group' THEN 'new_group_message' ELSE 'new_message' END
-      AND (data->>'conversation_id')::uuid = NEW.conversation_id
-    ) THEN
+    -- Determine notification type based on conversation type
+    DECLARE
+      v_notification_type text;
+    BEGIN
+      v_notification_type := CASE WHEN v_conversation.type = 'group' THEN 'new_group_message' ELSE 'new_message' END;
+      
+      -- Log notification type for debugging
+      RAISE NOTICE 'Creating notification for participant % with type: %, conversation_type: %, title: %', 
+        v_participant_id, v_notification_type, v_conversation.type,
+        CASE 
+          WHEN v_conversation.type = 'group' THEN v_sender_username || ' sent a message in ' || v_conversation.name
+          ELSE v_sender_username || ' sent you a message'
+        END;
+      
+      -- Check if there's already a notification for this conversation (read or unread)
+      -- If exists, update it; otherwise create new one
+      IF EXISTS (
+        SELECT 1 FROM notifications
+        WHERE user_id = v_participant_id
+        AND type = v_notification_type
+        AND (data->>'conversation_id')::uuid = NEW.conversation_id
+      ) THEN
       -- Update existing notification
       UPDATE notifications
       SET 
         title = CASE 
-          WHEN v_conversation.type = 'group' THEN 'New message in ' || v_conversation.name
-          ELSE 'New message'
+          WHEN v_conversation.type = 'group' THEN v_sender_username || ' sent a message in ' || v_conversation.name
+          ELSE v_sender_username || ' sent you a message'
         END,
         message = CASE 
-          WHEN v_conversation.type = 'group' THEN 'New message in ' || v_conversation.name
-          ELSE 'New message'
+          WHEN v_conversation.type = 'group' THEN v_sender_username || ': ' || LEFT(NEW.content, 50) || (CASE WHEN LENGTH(NEW.content) > 50 THEN '...' ELSE '' END)
+          ELSE LEFT(NEW.content, 100)
         END,
         data = jsonb_build_object(
           'conversation_id', NEW.conversation_id,
           'conversation_type', v_conversation.type,
           'conversation_name', v_conversation.name,
-          'message_preview', LEFT(NEW.content, 100)
+          'message_preview', LEFT(NEW.content, 100),
+          'sender_id', NEW.sender_id,
+          'sender_username', v_sender_username,
+          'sender_avatar_url', v_sender_avatar_url
         ),
         read = false,
         created_at = now()
       WHERE user_id = v_participant_id
-      AND type = CASE WHEN v_conversation.type = 'group' THEN 'new_group_message' ELSE 'new_message' END
+      AND type = v_notification_type
       AND (data->>'conversation_id')::uuid = NEW.conversation_id;
     ELSE
       -- Create new notification
@@ -66,24 +104,28 @@ BEGIN
         read
       ) VALUES (
         v_participant_id,
-        CASE WHEN v_conversation.type = 'group' THEN 'new_group_message' ELSE 'new_message' END,
+        v_notification_type,
         CASE 
-          WHEN v_conversation.type = 'group' THEN 'New message in ' || v_conversation.name
-          ELSE 'New message'
+          WHEN v_conversation.type = 'group' THEN v_sender_username || ' sent a message in ' || v_conversation.name
+          ELSE v_sender_username || ' sent you a message'
         END,
         CASE 
-          WHEN v_conversation.type = 'group' THEN 'New message in ' || v_conversation.name
-          ELSE 'New message'
+          WHEN v_conversation.type = 'group' THEN v_sender_username || ': ' || LEFT(NEW.content, 50) || (CASE WHEN LENGTH(NEW.content) > 50 THEN '...' ELSE '' END)
+          ELSE LEFT(NEW.content, 100)
         END,
         jsonb_build_object(
           'conversation_id', NEW.conversation_id,
           'conversation_type', v_conversation.type,
           'conversation_name', v_conversation.name,
-          'message_preview', LEFT(NEW.content, 100)
+          'message_preview', LEFT(NEW.content, 100),
+          'sender_id', NEW.sender_id,
+          'sender_username', v_sender_username,
+          'sender_avatar_url', v_sender_avatar_url
         ),
         false
       );
     END IF;
+    END; -- End of DECLARE block
   END LOOP;
 
   RETURN NEW;

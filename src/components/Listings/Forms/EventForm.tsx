@@ -4,10 +4,11 @@ import { TextArea } from './FormComponents/TextArea';
 import { CurrencyInput } from './FormComponents/CurrencyInput';
 import { FileInput } from './FormComponents/FileInput';
 import { SelectInput } from './FormComponents/SelectInput';
-import { ArrowLeft, ArrowRight, Calendar, MapPin, Home, Mail } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Calendar, MapPin, Home, Mail, Users, Globe, Lock } from 'lucide-react';
 import { eventTypes } from '../../../lib/constants/eventTypes';
 import { europeanCountries } from '../../../lib/constants/countries';
 import { supabase } from '../../../lib/supabase';
+import type { Community } from '../../../types/communities';
 
 interface EventFormProps {
   onClose: () => void;
@@ -15,7 +16,7 @@ interface EventFormProps {
   editId?: string;
 }
 
-type Step = 'basics' | 'details' | 'tickets' | 'media';
+type Step = 'basics' | 'details' | 'tickets' | 'media' | 'community';
 
 interface StepConfig {
   id: Step;
@@ -28,6 +29,7 @@ const steps: StepConfig[] = [
   { id: 'details', title: 'Details', icon: MapPin },
   { id: 'tickets', title: 'Tickets', icon: Home },
   { id: 'media', title: 'Media', icon: Mail },
+  { id: 'community', title: 'Community', icon: Users },
 ];
 
 export function EventForm({ onClose, onSuccess, editId }: EventFormProps) {
@@ -43,14 +45,56 @@ export function EventForm({ onClose, onSuccess, editId }: EventFormProps) {
     location: '',
     country: '',
     price: '',
-    ticket_url: ''
+    ticket_url: '',
+    community_id: '',
+    visibility: 'public' as 'public' | 'private'
   });
   const [currency, setCurrency] = useState('EUR');
   const [images, setImages] = useState<File[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [enableTicketSales, setEnableTicketSales] = useState(false);
+  const [communities, setCommunities] = useState<Community[]>([]);
+  const [userCommunities, setUserCommunities] = useState<Community[]>([]);
   const [existingImageUrls, setExistingImageUrls] = useState<string[]>([]);
+
+  useEffect(() => {
+    const fetchUserCommunities = async () => {
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return;
+
+        // Fetch communities where user is admin
+        const { data: adminCommunities } = await supabase
+          .from('community_members')
+          .select(`
+            community_id,
+            communities:community_id (
+              id,
+              name,
+              description,
+              type,
+              owner_id,
+              avatar_url,
+              banner_url,
+              created_at,
+              updated_at
+            )
+          `)
+          .eq('user_id', user.id)
+          .eq('role', 'admin');
+
+        if (adminCommunities) {
+          const communities = adminCommunities.map(member => member.communities).filter(Boolean);
+          setUserCommunities(communities as Community[]);
+        }
+      } catch (error) {
+        console.error('Error fetching user communities:', error);
+      }
+    };
+
+    fetchUserCommunities();
+  }, []);
 
   useEffect(() => {
     if (editId) {
@@ -122,6 +166,8 @@ export function EventForm({ onClose, onSuccess, editId }: EventFormProps) {
         return !enableTicketSales || (formData.price && formData.ticket_url);
       case 'media':
         return true;
+      case 'community':
+        return true; // Community step is optional
     }
   };
 
@@ -196,7 +242,9 @@ export function EventForm({ onClose, onSuccess, editId }: EventFormProps) {
         price: enableTicketSales ? parseFloat(formData.price) || 0 : 0,
         ticket_url: enableTicketSales ? formData.ticket_url : null,
         image_url: imageUrls[0],
-        images: imageUrls
+        images: imageUrls,
+        community_id: formData.community_id || null,
+        visibility: formData.visibility
       };
 
       let error;
@@ -416,61 +464,133 @@ export function EventForm({ onClose, onSuccess, editId }: EventFormProps) {
             </div>
           </div>
         );
+
+      case 'community':
+        return (
+          <div className="space-y-6">
+            <div>
+              <h3 className="text-lg font-medium text-content mb-4">Community Posting</h3>
+              <p className="text-sm text-content/60 mb-6">
+                You can post this event to communities you admin. This will make it visible to community members.
+              </p>
+            </div>
+
+            {userCommunities.length > 0 ? (
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-content mb-2">
+                    Post to Community (Optional)
+                  </label>
+                  <select
+                    value={formData.community_id}
+                    onChange={(e) => setFormData(prev => ({ ...prev, community_id: e.target.value }))}
+                    className="w-full px-4 py-3 border border-accent-text/20 rounded-lg focus:border-accent-text focus:ring-1 focus:ring-accent-text/20"
+                  >
+                    <option value="">No community (standalone event)</option>
+                    {userCommunities.map((community) => (
+                      <option key={community.id} value={community.id}>
+                        {community.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {formData.community_id && (
+                  <div>
+                    <label className="block text-sm font-medium text-content mb-2">
+                      Event Visibility
+                    </label>
+                    <div className="space-y-3">
+                      <label className="flex items-center p-3 border border-accent-text/20 rounded-lg cursor-pointer hover:bg-accent-base/5">
+                        <input
+                          type="radio"
+                          name="visibility"
+                          value="public"
+                          checked={formData.visibility === 'public'}
+                          onChange={(e) => setFormData(prev => ({ ...prev, visibility: e.target.value as 'public' | 'private' }))}
+                          className="mr-3"
+                        />
+                        <div className="flex items-center">
+                          <Globe className="h-4 w-4 mr-2 text-green-600" />
+                          <div>
+                            <div className="font-medium text-content">Public Event</div>
+                            <div className="text-sm text-content/60">
+                              Visible in events directory and community page
+                            </div>
+                          </div>
+                        </div>
+                      </label>
+                      
+                      <label className="flex items-center p-3 border border-accent-text/20 rounded-lg cursor-pointer hover:bg-accent-base/5">
+                        <input
+                          type="radio"
+                          name="visibility"
+                          value="private"
+                          checked={formData.visibility === 'private'}
+                          onChange={(e) => setFormData(prev => ({ ...prev, visibility: e.target.value as 'public' | 'private' }))}
+                          className="mr-3"
+                        />
+                        <div className="flex items-center">
+                          <Lock className="h-4 w-4 mr-2 text-gray-600" />
+                          <div>
+                            <div className="font-medium text-content">Private Event</div>
+                            <div className="text-sm text-content/60">
+                              Only visible in the community page
+                            </div>
+                          </div>
+                        </div>
+                      </label>
+                    </div>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div className="text-center py-8">
+                <Users className="h-12 w-12 text-content/20 mx-auto mb-4" />
+                <h3 className="text-lg font-medium text-content mb-2">No Communities Found</h3>
+                <p className="text-sm text-content/60 mb-4">
+                  You need to be an admin of a community to post events there.
+                </p>
+                <p className="text-sm text-content/60">
+                  This event will be created as a standalone event visible in the events directory.
+                </p>
+              </div>
+            )}
+          </div>
+        );
+
+      default:
+        return null;
     }
   };
 
   return (
-    <Modal title={editId ? "Edit Event" : "Add Event"} onClose={onClose} fullScreenOnMobile={true}>
-      <div className="mb-8">
-        <div className="hidden md:block">
-          <div className="flex justify-between">
-            {steps.map((step, index) => {
-              const Icon = step.icon;
-              const isActive = currentStep === step.id;
-              const isPast = steps.findIndex(s => s.id === currentStep) > index;
-              
-              return (
-                <div key={step.id} className="flex items-center">
-                  <div className={`
-                    flex items-center justify-center w-12 h-12 rounded-full border-2 transition-colors p-3
-                    ${isActive || isPast 
-                      ? 'border-accent-text bg-accent-text text-white' 
-                      : 'border-accent-text/20 text-content/60'
-                    }
-                  `}>
-                    <Icon className="h-5 w-5" />
-                  </div>
-                  {index < steps.length - 1 && (
-                    <div className={`w-full h-0.5 mx-2 ${
-                      isPast ? 'bg-accent-text' : 'bg-accent-text/20'
-                    }`} />
-                  )}
-                </div>
-              );
-            })}
-          </div>
-          <div className="flex justify-between mt-2">
-            {steps.map((step) => (
-              <span key={step.id} className="text-xs text-content/60 w-20 text-center">
+    <Modal title={editId ? "Edit Event" : "Add Event"} onClose={onClose}>
+      <div className="max-w-2xl mx-auto">
+        {/* Progress Steps */}
+        <div className="flex items-center justify-between mb-8">
+          {steps.map((step, index) => (
+            <div key={step.id} className="flex items-center">
+              <div className={`flex items-center justify-center w-8 h-8 rounded-full text-sm font-medium ${
+                currentStep === step.id
+                  ? 'bg-accent-text text-white'
+                  : index < steps.findIndex(s => s.id === currentStep)
+                  ? 'bg-green-500 text-white'
+                  : 'bg-gray-200 text-gray-600'
+              }`}>
+                {index + 1}
+              </div>
+              <span className={`ml-2 text-sm ${
+                currentStep === step.id ? 'text-accent-text font-medium' : 'text-gray-500'
+              }`}>
                 {step.title}
               </span>
-            ))}
-          </div>
+              {index < steps.length - 1 && (
+                <div className="w-8 h-0.5 bg-gray-200 mx-4" />
+              )}
+            </div>
+          ))}
         </div>
-
-        <div className="md:hidden flex items-center justify-between mb-4">
-          <span className="text-sm text-content/60">Step {steps.findIndex(s => s.id === currentStep) + 1} of {steps.length}</span>
-          <span className="text-sm font-medium text-content">{steps.find(s => s.id === currentStep)?.title}</span>
-        </div>
-        <div className="md:hidden bg-accent-base/10 rounded-full h-2 mb-6">
-          <div 
-            className="h-full bg-accent-text rounded-full transition-all duration-300"
-            style={{ 
-              width: `${((steps.findIndex(s => s.id === currentStep) + 1) / steps.length) * 100}%` 
-            }}
-          />
-        </div>
-      </div>
 
       <div className="mb-8">
         {renderStepContent()}
@@ -511,7 +631,7 @@ export function EventForm({ onClose, onSuccess, editId }: EventFormProps) {
           >
             {loading ? (
               'Creating...'
-            ) : currentStep === 'media' ? (
+            ) : currentStep === 'community' ? (
               editId ? 'Update Event' : 'Create Event'
             ) : (
               <>
@@ -522,6 +642,6 @@ export function EventForm({ onClose, onSuccess, editId }: EventFormProps) {
           </button>
         </div>
       </div>
-    </Modal>
+      </div>    </Modal>
   );
 }

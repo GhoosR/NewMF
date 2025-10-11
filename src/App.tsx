@@ -6,7 +6,9 @@ import { HelmetProvider } from 'react-helmet-async';
 import { ScrollToTop } from './components/ScrollToTop';
 import { supabase } from './lib/supabase';
 import { WelcomePopup } from './components/WelcomePopup';
+import { NewUserRedirect } from './components/NewUserRedirect';
 import { startActivityTracking, stopActivityTracking } from './lib/activity';
+import { useSessionRestoration } from './hooks/useSessionRestoration';
 import Auth from './components/Auth';
 import MainLayout from './components/Layout/MainLayout';
 import Cookies from 'js-cookie';
@@ -34,6 +36,7 @@ const CourseDetails = lazy(() => import('./pages/CourseDetails').then(module => 
 const CourseLessons = lazy(() => import('./pages/CourseLessons'));
 const Recipes = lazy(() => import('./pages/Recipes').then(module => ({ default: module.Recipes })));
 const RecipeDetails = lazy(() => import('./pages/RecipeDetails').then(module => ({ default: module.RecipeDetails })));
+const RecipeRedirect = lazy(() => import('./components/Recipes/RecipeRedirect').then(module => ({ default: module.RecipeRedirect })));
 const Nutrition = lazy(() => import('./pages/tools/Nutrition').then(module => ({ default: module.Nutrition })));
 const CorporateWellness = lazy(() => import('./pages/CorporateWellness').then(module => ({ default: module.CorporateWellness })));
 const Blogs = lazy(() => import('./pages/Blogs').then(module => ({ default: module.Blogs })));
@@ -60,6 +63,16 @@ function App() {
   const [showAuth, setShowAuth] = useState(false);
   const [showWelcome, setShowWelcome] = useState(false);
   const [isInitialized, setIsInitialized] = useState(false);
+  
+  // Initialize session restoration for iOS WebViews
+  const { 
+    isRestoring, 
+    isIOSWebView, 
+    sessionRestored, 
+    error: restorationError,
+    isAppRestart,
+    appLevelRestoration
+  } = useSessionRestoration();
 
   // Extract OneSignal ID from URL and store in cookie
   useEffect(() => {
@@ -101,28 +114,14 @@ function App() {
             });
         }
 
-        // Check if this is a new user session
-        if (session.user.user_metadata?.isNewUser) {
-          setShowWelcome(true);
-          // Remove the flag after showing welcome popup
-          supabase.auth.updateUser({
-            data: { isNewUser: false }
-          });
-        }
+        // Note: New user redirect is now handled by NewUserRedirect component
       }
     });
 
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
-      // Show welcome popup for new users
-      if (session?.user?.user_metadata?.isNewUser) {
-        setShowWelcome(true);
-        // Remove the flag after showing welcome popup
-        supabase.auth.updateUser({
-          data: { isNewUser: false }
-        });
-      }
+      // Note: New user redirect is now handled by NewUserRedirect component
       setSession(session);
       if (session) {
         setShowAuth(false);
@@ -165,23 +164,49 @@ function App() {
       <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-accent-text"></div>
     </div>
   );
+
+  // Enhanced loading component for iOS WebView session restoration
+  const IOSWebViewLoadingFallback = () => (
+    <div className="flex flex-col items-center justify-center min-h-[50vh] space-y-4">
+      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-accent-text"></div>
+      {isRestoring && (
+        <div className="text-center space-y-2">
+          <p className="text-sm text-gray-600">
+            {appLevelRestoration ? 'Restoring session after app restart...' : 'Restoring session...'}
+          </p>
+          {isAppRestart && (
+            <p className="text-xs text-gray-500">
+              App was restarted, recovering your session
+            </p>
+          )}
+        </div>
+      )}
+      {sessionRestored && (
+        <p className="text-sm text-green-600 text-center">
+          {isAppRestart ? 'Session restored after app restart!' : 'Session restored successfully'}
+        </p>
+      )}
+      {restorationError && (
+        <div className="text-center space-y-2">
+          <p className="text-sm text-red-600">
+            Session restoration failed. Please try logging in again.
+          </p>
+          {isAppRestart && (
+            <p className="text-xs text-gray-500">
+              This can happen when the app was closed for a long time
+            </p>
+          )}
+        </div>
+      )}
+    </div>
+  );
   return (
     <HelmetProvider>
       <Router>
         <ScrollToTop />
         <div className="h-screen flex flex-col bg-background text-content">
           {showAuth && !session ? (
-            <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-0">
-              <div className="bg-background w-full h-full md:h-auto md:rounded-lg md:p-8 md:max-w-md md:w-full md:mx-4">
-                <Auth onClose={() => setShowAuth(false)} />
-                <button
-                  onClick={() => setShowAuth(false)}
-                  className="mt-4 w-full text-accent-text hover:text-accent-text/80 md:block hidden"
-                >
-                  Cancel
-                </button>
-              </div>
-            </div>
+            <Auth onClose={() => setShowAuth(false)} />
           ) : null}
           
           {showWelcome && (
@@ -192,7 +217,8 @@ function App() {
             onLogin={() => setShowAuth(true)}
             isAuthenticated={!!session}
           >
-            <Suspense fallback={<LoadingFallback />}>
+            <NewUserRedirect />
+            <Suspense fallback={isIOSWebView ? <IOSWebViewLoadingFallback /> : <LoadingFallback />}>
             <Routes>
               {/* Public Routes */}
               <Route path="/" element={session ? <NewsFeed /> : <Home />} />
@@ -207,7 +233,8 @@ function App() {
               <Route path="/courses" element={<Courses />} />
               <Route path="/courses/:id" element={<CourseDetails />} />
               <Route path="/recipes" element={<Recipes />} />
-              <Route path="/recipes/:id" element={<RecipeDetails />} />
+              <Route path="/recipes/id/:id" element={<RecipeRedirect />} />
+              <Route path="/recipes/:slug" element={<RecipeDetails />} />
               <Route path="/articles" element={<Articles />} />
               <Route path="/articles/:slug" element={<ArticleDetails />} />
               <Route path="/blogs" element={<Blogs />} />

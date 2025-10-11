@@ -171,10 +171,25 @@ export function Notifications() {
       
       // Handle navigation based on notification type
       switch (notification.type) {
-        case 'new_message': {
+        case 'new_message':
+        case 'new_group_message': {
           const conversationId = notification.data.conversation_id;
+          const conversationType = notification.data.conversation_type;
           if (conversationId) {
-            window.location.href = `/chat/${notification.data.sender_id}`;
+            // Navigate differently based on conversation type
+            if (conversationType === 'group') {
+              // Group messages: use conversation parameter
+              window.location.href = `/chat?conversation=${conversationId}`;
+            } else {
+              // Direct messages: use user ID from conversation data
+              const otherUserId = notification.data.other_user_id;
+              if (otherUserId) {
+                window.location.href = `/chat/${otherUserId}`;
+              } else {
+                // Fallback to conversation parameter if other_user_id is not available
+                window.location.href = `/chat?conversation=${conversationId}`;
+              }
+            }
           }
           break;
         }
@@ -205,7 +220,23 @@ export function Notifications() {
           break;
         case 'recipe_approved':
           if (notification.data.listing_id) {
-            window.location.href = `/recipes/${notification.data.listing_id}`;
+            // Try to get the recipe slug, fallback to ID
+            try {
+              const { data: recipe } = await supabase
+                .from('recipes')
+                .select('slug')
+                .eq('id', notification.data.listing_id)
+                .single();
+              
+              if (recipe?.slug) {
+                window.location.href = `/recipes/${recipe.slug}`;
+              } else {
+                window.location.href = `/recipes/${notification.data.listing_id}`;
+              }
+            } catch (error) {
+              // Fallback to ID if slug lookup fails
+              window.location.href = `/recipes/${notification.data.listing_id}`;
+            }
           }
           break;
         case 'join_request':

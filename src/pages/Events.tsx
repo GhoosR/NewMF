@@ -34,9 +34,15 @@ export function Events() {
               username,
               full_name,
               avatar_url
+            ),
+            community:communities (
+              id,
+              name,
+              avatar_url
             )
           `)
-          .eq('approval_status', 'approved');
+          .eq('approval_status', 'approved')
+          .or('visibility.eq.public,visibility.is.null');
 
         if (filters.eventTypes.length > 0) {
           query = query.in('event_type', filters.eventTypes);

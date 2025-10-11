@@ -51,9 +51,24 @@ export function NotificationsList({
         case 'new_message':
         case 'new_group_message': {
           const conversationId = notification.data.conversation_id;
+          const conversationType = notification.data.conversation_type;
           if (conversationId) {
-            // Always navigate using conversation ID for both private and group messages
-            navigate(`/chat?conversation=${conversationId}`);
+            // Navigate differently based on conversation type
+            if (conversationType === 'group') {
+              // Group messages: use conversation parameter
+              navigate(`/chat?conversation=${conversationId}`);
+            } else {
+              // Direct messages: use user ID from conversation data
+              // For direct messages, we need to get the other user's ID
+              // The conversation data should contain the other user's ID
+              const otherUserId = notification.data.other_user_id;
+              if (otherUserId) {
+                navigate(`/chat/${otherUserId}`);
+              } else {
+                // Fallback to conversation parameter if other_user_id is not available
+                navigate(`/chat?conversation=${conversationId}`);
+              }
+            }
           }
           break;
         }
@@ -84,7 +99,23 @@ export function NotificationsList({
           break;
         case 'recipe_approved':
           if (notification.data.listing_id) {
-            navigate(`/recipes/${notification.data.listing_id}`);
+            // Try to get the recipe slug, fallback to ID
+            try {
+              const { data: recipe } = await supabase
+                .from('recipes')
+                .select('slug')
+                .eq('id', notification.data.listing_id)
+                .single();
+              
+              if (recipe?.slug) {
+                navigate(`/recipes/${recipe.slug}`);
+              } else {
+                navigate(`/recipes/${notification.data.listing_id}`);
+              }
+            } catch (error) {
+              // Fallback to ID if slug lookup fails
+              navigate(`/recipes/${notification.data.listing_id}`);
+            }
           }
           break;
         case 'join_request':
@@ -158,29 +189,14 @@ export function NotificationsList({
                   <div className="ml-3 flex-1">
                     <div className="flex items-center gap-2">
                       <span className="font-medium text-gray-900">
-                        {notification.data?.conversation_type === 'group'
-                          ? `New message in ${notification.data.conversation_name}`
-                          : 'New message'}
+                        {notification.title}
                       </span>
                       <span className="text-xs text-gray-400">
                         {formatDistanceToNow(new Date(notification.created_at), { addSuffix: true })}
                       </span>
                     </div>
                     <p className="text-sm text-gray-500 mt-1">
-                      {(() => {
-                        console.log('[DEBUG] Rendering notification:', {
-                          id: notification.id,
-                          type: notification.type,
-                          data: notification.data,
-                          isGroup: notification.data?.conversation_type === 'group',
-                          conversationType: notification.data?.conversation_type,
-                          groupName: notification.data?.conversation_name,
-                          senderUsername: notification.data?.sender_username
-                        });
-                        return notification.data?.conversation_type === 'group' 
-                          ? `New message in ${notification.data.conversation_name}`
-                          : 'New message';
-                      })()}
+                      {notification.message}
                     </p>
                     <NotificationActions 
                       notification={notification}

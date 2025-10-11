@@ -16,7 +16,7 @@ export function RecipeCard({ recipe, showStatus = false }: RecipeCardProps) {
 
   return (
     <div className="bg-background rounded-lg shadow-sm overflow-hidden hover:shadow-md transition-shadow">
-      <Link to={`/recipes/${recipe.id}`}>
+      <Link to={`/recipes/${recipe.slug}`}>
         <div className="aspect-w-16 aspect-h-9">
           <img
             src={recipe.image_url || 'https://images.unsplash.com/photo-1495521821757-a1efb6729352?auto=format&fit=crop&q=80&w=400'}
@@ -51,7 +51,7 @@ export function RecipeCard({ recipe, showStatus = false }: RecipeCardProps) {
             </span>
           )}
         </div>
-        <Link to={`/recipes/${recipe.id}`}>
+        <Link to={`/recipes/${recipe.slug}`}>
           <h3 className="text-lg font-semibold text-content mb-2 hover:text-accent-text">
             {recipe.title}
           </h3>

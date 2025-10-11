@@ -9,7 +9,7 @@ import { formatCategoryName } from '../lib/utils/formatters';
 import type { Recipe } from '../types/recipes';
 
 export function RecipeDetails() {
-  const { id } = useParams<{ id: string }>();
+  const { slug } = useParams<{ slug: string }>();
   const navigate = useNavigate();
   const [recipe, setRecipe] = useState<Recipe | null>(null);
   const [loading, setLoading] = useState(true);
@@ -22,22 +22,52 @@ export function RecipeDetails() {
       try {
         const { data: { user: currentUser } } = await supabase.auth.getUser();
         
-        const { data, error } = await supabase
-          .from('recipes')
-          .select(`
-            *,
-            user:users (
-              id,
-              username,
-              avatar_url,
-              verified
-            )
-          `)
-          .eq('id', id)
-          .single();
+        // Check if the slug parameter looks like a UUID (old ID-based URL)
+        const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(slug || '');
+        
+        let query;
+        if (isUUID) {
+          // If it's a UUID, try to find by ID and redirect to slug
+          query = supabase
+            .from('recipes')
+            .select(`
+              *,
+              user:users (
+                id,
+                username,
+                avatar_url,
+                verified
+              )
+            `)
+            .eq('id', slug)
+            .single();
+        } else {
+          // If it's a slug, find by slug
+          query = supabase
+            .from('recipes')
+            .select(`
+              *,
+              user:users (
+                id,
+                username,
+                avatar_url,
+                verified
+              )
+            `)
+            .eq('slug', slug)
+            .single();
+        }
+        
+        const { data, error } = await query;
 
         if (error) throw error;
         if (!data) throw new Error('Recipe not found');
+
+        // If we found a recipe by ID (UUID), redirect to the slug URL
+        if (isUUID && data.slug) {
+          navigate(`/recipes/${data.slug}`, { replace: true });
+          return;
+        }
 
         setRecipe(data);
         setIsOwnRecipe(currentUser?.id === data.user_id);
@@ -48,13 +78,13 @@ export function RecipeDetails() {
       }
     }
 
-    if (id) {
+    if (slug) {
       fetchRecipe();
     }
-  }, [id]);
+  }, [slug]);
 
   const handleDelete = async () => {
-    if (!id || !window.confirm('Are you sure you want to delete this recipe? This action cannot be undone.')) {
+    if (!recipe?.id || !window.confirm('Are you sure you want to delete this recipe? This action cannot be undone.')) {
       return;
     }
 
@@ -62,7 +92,7 @@ export function RecipeDetails() {
       const { error: deleteError } = await supabase
         .from('recipes')
         .delete()
-        .eq('id', id);
+        .eq('id', recipe.id);
 
       if (deleteError) throw deleteError;
       navigate('/recipes');

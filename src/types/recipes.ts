@@ -2,6 +2,7 @@ export interface Recipe {
   id: string;
   user_id: string;
   title: string;
+  slug: string;
   description: string;
   ingredients: string[];
   instructions: string[];

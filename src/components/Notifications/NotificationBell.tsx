@@ -321,12 +321,18 @@ export function NotificationBell() {
     setUnreadCount(prev => Math.max(0, prev - 1));
   };
 
-  const handleNotificationClick = () => {
+  const handleNotificationClick = async () => {
     if (isMobile) {
       navigate('/notifications');
       setShowDropdown(false);
     } else {
-      setShowDropdown(!showDropdown);
+      const newShowDropdown = !showDropdown;
+      setShowDropdown(newShowDropdown);
+      
+      // If opening the dropdown and there are unread notifications, mark all as read
+      if (newShowDropdown && unreadCount > 0) {
+        await handleMarkAllAsRead();
+      }
     }
   };
 
@@ -376,9 +382,6 @@ export function NotificationBell() {
             }}
             onClose={() => {
               setShowDropdown(false);
-              if (unreadCount > 0) {
-                handleMarkAllAsRead();
-              }
             }}
             userAvatars={userAvatars}
           />

@@ -15,10 +15,11 @@ export function CorporateWellness() {
           <div className="lg:grid lg:grid-cols-2 lg:gap-12 items-center">
             <div className="text-center lg:text-left">
               <h1 className="text-4xl lg:text-5xl font-gelica font-bold text-content leading-tight mb-6">
-                Enhance Staff Wellbeing, Vitality & Productivity
+              Wellbeing at Work: Good for Employees, Great for Business.
               </h1>
               <p className="text-xl text-content/70 mb-8">
-                A healthy workspace cultivates productivity and employee engagement. Let us help you create a thriving workplace wellness program.
+              Wellness at work fuels happier employees, stronger teams, and lasting results. When employees feel their best, they give their best - and your workplace shines.
+
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
                 <a 
@@ -28,17 +29,12 @@ export function CorporateWellness() {
                   Contact Us
                   <ArrowRight className="ml-2 h-5 w-5" />
                 </a>
-                <a 
-                  href="#membership"
-                  className="inline-flex items-center justify-center px-6 py-3 border border-accent-text text-base font-medium rounded-lg text-accent-text hover:bg-accent-text hover:text-white transition-colors"
-                >
-                  Become Member
-                </a>
+                
               </div>
             </div>
             <div className="mt-12 lg:mt-0">
               <img 
-                src="https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?auto=format&fit=crop&q=80&w=2000"
+                src="https://afvltpqnhmaxanirwnqz.supabase.co/storage/v1/object/public/post-images/59bed50f-5ccf-4265-87fa-7743af34d361/happy-workplace-employees.jpg"
                 alt="Corporate Wellness"
                 className="rounded-xl shadow-xl"
               />
@@ -80,7 +76,7 @@ export function CorporateWellness() {
             <div className="bg-gradient-to-br from-accent-text/5 to-accent-text/10 rounded-xl p-8">
               <Building2 className="h-12 w-12 text-accent-text mb-6" />
               <h3 className="text-2xl font-bold text-content mb-4">
-                Customized Corporate Wellness Days
+                Customised Corporate Wellness Days
               </h3>
               <p className="text-content/70">
                 Let us orchestrate your workplace wellness initiatives! Our experienced practitioners design and deliver the perfect wellness day, tailored to your unique business needs and company culture. Contact us to craft your bespoke day of wellness and team building!
@@ -94,7 +90,7 @@ export function CorporateWellness() {
                 Expert Health Speakers
               </h3>
               <p className="text-content/70">
-                Elevate your organizational wellness with our roster of expert speakers. We organize engaging presentations on various health and wellness topics to inform and inspire your employees, fostering a culture of holistic employee wellness.
+                Elevate your organisational wellness with our roster of expert speakers. We organize engaging presentations on various health and wellness topics to inform and inspire your employees, fostering a culture of holistic employee wellness.
               </p>
             </div>
 

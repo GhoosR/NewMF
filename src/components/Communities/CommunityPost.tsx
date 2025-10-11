@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { MessageCircle, MoreVertical, Edit, Trash2, Save, X, Camera } from 'lucide-react';
+import { MessageCircle, MoreVertical, Edit, Trash2, Save, X, Camera, Pin } from 'lucide-react';
 import { Avatar } from '../Profile/Avatar';
 import { Username } from '../Profile/Username';
 import { CommentSection } from './Comments/CommentSection';
@@ -13,11 +13,17 @@ import { createNotification } from '../../lib/notifications';
 import type { CommunityPostType } from '../../types/communities';
 
 interface CommunityPostProps {
-  post: CommunityPostType;
+  post: CommunityPostType & {
+    pinned?: boolean;
+    pinned_at?: string;
+  };
+  isAdmin?: boolean;
+  onPin?: () => void;
+  onUnpin?: () => void;
   onDelete?: () => void;
 }
 
-export function CommunityPost({ post, onDelete }: CommunityPostProps) {
+export function CommunityPost({ post, isAdmin = false, onPin, onUnpin, onDelete }: CommunityPostProps) {
   const [showComments, setShowComments] = useState(false);
   const [showMenu, setShowMenu] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
@@ -211,12 +217,20 @@ export function CommunityPost({ post, onDelete }: CommunityPostProps) {
   return (
     <div 
       ref={postRef}
-      className="bg-white rounded-lg shadow-sm p-4 mb-4 hover:shadow-md transition-all"
+      className={`bg-white rounded-lg shadow-sm p-4 mb-4 hover:shadow-md transition-all ${
+        post.pinned ? 'ring-2 ring-accent-text' : ''
+      }`}
       style={{ 
         opacity: 1,
         transform: 'translateY(0)',
       }}
     >
+      {post.pinned && (
+        <div className="bg-accent-text text-white px-3 py-1 text-xs font-medium flex items-center mb-3 -mx-4 -mt-4">
+          <Pin className="h-3 w-3 mr-1" />
+          Pinned Post
+        </div>
+      )}
       <div className="flex space-x-3">
         <Link to={`/profile/${post.user?.username}/listings`}>
           <Avatar
@@ -244,7 +258,7 @@ export function CommunityPost({ post, onDelete }: CommunityPostProps) {
                 {formatDate(new Date(post.created_at))}
               </span>
             </div>
-            {isOwnPost && (
+            {(isOwnPost || isAdmin) && (
               <div className="relative" ref={menuRef}>
                 <button 
                   onClick={() => setShowMenu(!showMenu)}
@@ -255,21 +269,52 @@ export function CommunityPost({ post, onDelete }: CommunityPostProps) {
                 </button>
                 {showMenu && (
                   <div className="absolute right-0 mt-1 w-48 bg-white rounded-lg shadow-lg py-1 z-10 border border-accent-text/10">
-                    <button
-                      onClick={handleEdit}
-                      className="w-full text-left px-4 py-2 text-sm text-content hover:bg-accent-base/10 transition-colors flex items-center"
-                    >
-                      <Edit className="h-4 w-4 mr-2" />
-                      Edit
-                    </button>
-                    <button
-                      onClick={handleDeletePost}
-                      className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 disabled:opacity-50 transition-colors flex items-center"
-                      disabled={isDeleting}
-                    >
-                      <Trash2 className="h-4 w-4 mr-2" />
-                      Delete
-                    </button>
+                    {isAdmin && (
+                      <>
+                        {post.pinned ? (
+                          <button
+                            onClick={() => {
+                              onUnpin?.();
+                              setShowMenu(false);
+                            }}
+                            className="w-full text-left px-4 py-2 text-sm text-content hover:bg-accent-base/10 transition-colors flex items-center"
+                          >
+                            <Pin className="h-4 w-4 mr-2" />
+                            Unpin Post
+                          </button>
+                        ) : (
+                          <button
+                            onClick={() => {
+                              onPin?.();
+                              setShowMenu(false);
+                            }}
+                            className="w-full text-left px-4 py-2 text-sm text-content hover:bg-accent-base/10 transition-colors flex items-center"
+                          >
+                            <Pin className="h-4 w-4 mr-2" />
+                            Pin Post
+                          </button>
+                        )}
+                      </>
+                    )}
+                    {isOwnPost && (
+                      <>
+                        <button
+                          onClick={handleEdit}
+                          className="w-full text-left px-4 py-2 text-sm text-content hover:bg-accent-base/10 transition-colors flex items-center"
+                        >
+                          <Edit className="h-4 w-4 mr-2" />
+                          Edit
+                        </button>
+                        <button
+                          onClick={handleDeletePost}
+                          className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 disabled:opacity-50 transition-colors flex items-center"
+                          disabled={isDeleting}
+                        >
+                          <Trash2 className="h-4 w-4 mr-2" />
+                          Delete
+                        </button>
+                      </>
+                    )}
                   </div>
                 )}
               </div>

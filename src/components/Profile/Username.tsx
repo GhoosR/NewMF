@@ -1,5 +1,7 @@
 import { Link } from 'react-router-dom';
 import { BadgeCheck } from 'lucide-react';
+import { BadgeDisplay } from '../Badges/BadgeDisplay';
+import { useUserBadge } from '../../hooks/useUserBadge';
 
 interface UsernameProps {
   username: string;
@@ -9,6 +11,8 @@ interface UsernameProps {
 }
 
 export function Username({ username, userId, className = '', verified = false }: UsernameProps) {
+  const { badge } = useUserBadge(userId);
+
   if (!userId) {
     return (
       <span className={`${className} flex items-center gap-1`}>
@@ -32,6 +36,7 @@ export function Username({ username, userId, className = '', verified = false }:
       <span className="flex items-center gap-1">
         {username}
         {verified && <BadgeCheck className="inline-block text-[#feb800] fill-[#feb800] stroke-white" size={16} />}
+        <BadgeDisplay badge={badge} size="sm" />
       </span>
     </Link>
   );
