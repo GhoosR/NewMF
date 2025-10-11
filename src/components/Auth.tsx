@@ -86,8 +86,17 @@ export function Auth({ onClose }: AuthProps) {
           throw new Error('This username is already taken. Please choose another one.');
         }
 
-        await signUp(email, password, username);
+        const result = await signUp(email, password, username);
+        
+        // Close modal first
         onClose?.();
+        
+        // Wait a bit for the session to be set, then redirect to profile
+        if (result?.user) {
+          setTimeout(() => {
+            window.location.href = `/profile/${username}`;
+          }, 500);
+        }
       } else if (mode === 'signin') {
         await signIn(email, password);
         onClose?.();
