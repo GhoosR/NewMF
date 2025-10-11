@@ -47,9 +47,15 @@ export function FileInput({
 
     setCompressing(true);
     // Compress images before adding them
+    // Note: This handles HEIC/HEIF files from iPhones and automatically converts them
     const compressedFiles = await Promise.all(
       fileArray.map(async (file) => {
-        if (file.type.startsWith('image/')) {
+        const isHEIC = file.name.toLowerCase().endsWith('.heic') || 
+                       file.name.toLowerCase().endsWith('.heif') ||
+                       file.type === 'image/heic' || 
+                       file.type === 'image/heif';
+        
+        if (file.type.startsWith('image/') || isHEIC) {
           return compressImage(file, {
             quality: 0.8,
             maxWidth: 1920,

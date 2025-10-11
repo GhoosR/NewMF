@@ -1,18 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { 
-  Leaf, 
   Users,
   Calendar, 
-  Building2, 
   BookOpen, 
-  UtensilsCrossed,
   ArrowRight,
-  Heart,
   Globe,
-  Shield,
   Star,
-  Sparkles,
   Plus,
   BadgeCheck,
   CreditCard,
@@ -20,34 +14,61 @@ import {
   Zap,
   Building,
   CheckCircle,
-  MessageSquare
+  MessageSquare,
+  Video,
+  TreePine,
+  MessageCircle
 } from 'lucide-react';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import 'swiper/css';
 import 'swiper/css/pagination';
 import { Pagination, Autoplay } from 'swiper/modules';
-import { Meta } from '../components/Meta';
-import { supabase } from '../lib/supabase';
-import { CreateTimelinePost } from '../components/Timeline/CreateTimelinePost';
-import { formatDate, formatTime } from '../lib/utils/dateUtils';
-import { NewsFeedSidebar } from '../components/Home/NewsFeedSidebar';
-import { TimelineList } from '../components/Timeline/TimelineList';
-import { useInfiniteScroll } from '../hooks/useInfiniteScroll';
-import type { TimelinePost } from '../types/timeline';
-import type { Event } from '../types/events';
 import { Auth } from '../components/Auth';
-import { useAdmin } from '../lib/hooks/useAdmin';
+import Lottie from 'lottie-react';
 
 export function Home() {
   const [showAuthModal, setShowAuthModal] = useState(false);
+  const [liveStreamAnimation, setLiveStreamAnimation] = useState(null);
 
   const handleGetStarted = () => {
     setShowAuthModal(true);
   };
 
+  useEffect(() => {
+    // Load the live stream Lottie animation
+    fetch('/lottie-live-stream.json')
+      .then(response => response.json())
+      .then(data => setLiveStreamAnimation(data))
+      .catch(error => console.error('Error loading live stream Lottie animation:', error));
+  }, []);
+
+  // Component to render Lottie animation with fallback
+  const LottieIcon = ({ 
+    animationData, 
+    fallbackIcon: FallbackIcon, 
+    className = "h-8 w-8" 
+  }: { 
+    animationData: any; 
+    fallbackIcon: any; 
+    className?: string; 
+  }) => {
+    if (animationData) {
+      return (
+        <Lottie
+          animationData={animationData}
+          loop={true}
+          autoplay={true}
+          style={{ width: 64, height: 64 }}
+          className="lottie-animation"
+        />
+      );
+    }
+    return <FallbackIcon className={className} />;
+  };
+
   const spotlightPractitioners = [
   {
-    name: "Bee Ingramn",
+    name: "Bee Ingram",
     title: "Yoga Teacher",
     image: "https://afvltpqnhmaxanirwnqz.supabase.co/storage/v1/object/public/blog-images/59bed50f-5ccf-4265-87fa-7743af34d361/bee%20ingram%20yoga%20teacher.jpeg",
   },
@@ -63,54 +84,38 @@ export function Home() {
   }
 ];
 
-  const features = [
-  {
-    icon: Users,
-    title: "Find Practitioners",
-    description: "Connect with verified wellness professionals specializing in various holistic practices."
-  },
-  {
-    icon: Calendar,
-    title: "Join Events",
-    description: "Participate in workshops, retreats, and wellness events to deepen your practice."
-  },
-  {
-    icon: Building2,
-    title: "Book Venues",
-    description: "Discover and book beautiful spaces perfect for wellness activities and events."
-  },
-  {
-    icon: BookOpen,
-    title: "Learn & Grow",
-    description: "Access courses and resources to expand your knowledge of holistic wellness."
-  },
-  {
-    icon: UtensilsCrossed,
-    title: "Healthy Recipes",
-    description: "Explore nutritious recipes and cooking tips for mindful eating."
-  },
-  {
-    icon: Globe,
-    title: "Global Community",
-    description: "Be part of a supportive community sharing your passion for wellness."
-  }
-];
 
   const benefits = [
   {
-    icon: Star,
-    title: "Connect with Wellness Professionals",
-    description: "Discover practitioners, venues, job opportunities and events that align with your Wellness journey."
+    icon: Video,
+    title: "Live Streaming",
+    description: "Join our interactive wellness sessions multiple times a week with expert practitioners. From yoga and meditation to nutrition talks, engage in real-time with our global community.",
+    size: "large",
+    animationData: liveStreamAnimation
   },
   {
-    icon: Sparkles,
+    icon: Star,
+    title: "Connect with Wellness Professionals",
+    description: "Discover practitioners, venues, job opportunities and events that align with your Wellness journey.",
+    size: "small"
+  },
+  {
+    icon: MessageCircle,
     title: "Build Your Own Community",
-    description: "Create and nurture connections with like-minded individuals who share your passion for mindful living."
+    description: "Create and nurture connections with like-minded individuals who share your passion for mindful living.",
+    size: "small"
   },
   {
     icon: BookOpen,
     title: "Learn and Grow Together",
-    description: "Join daily live-streams. Access tools and courses designed to deepen your knowledge and enhance your wellness practice."
+    description: "Access comprehensive courses and educational resources designed to deepen your knowledge and enhance your wellness practice.",
+    size: "large"
+  },
+  {
+    icon: TreePine,
+    title: "Permaculture Tools",
+    description: "Discover sustainable living tools and resources to create regenerative ecosystems and live in harmony with nature.",
+    size: "small"
   }
 ];
 
@@ -236,26 +241,161 @@ export function Home() {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
-            {benefits.map((benefit, index) => {
-              const Icon = benefit.icon;
-              return (
-                <div 
-                  key={index}
-                  className="bg-white rounded-xl p-8 shadow-sm hover:shadow-lg transition-all duration-300 border border-accent-text/5 transform hover:-translate-y-1"
-                >
-                  <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-accent-text/10 text-accent-text mb-6">
-                    <Icon className="h-8 w-8" />
-                  </div>
-                  <h3 className="text-xl font-bold text-content mb-4">
-                    {benefit.title}
-                  </h3>
-                  <p className="text-content/70 leading-relaxed">
-                    {benefit.description}
-                  </p>
-                </div>
-              );
-            })}
+          {/* Desktop Layout */}
+          <div className="hidden lg:block">
+            {/* First Row: 1 large + 1 small */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-10 mb-10">
+              <div className="lg:col-span-2">
+                {(() => {
+                  const benefit = benefits[0]; // Live Streaming (large)
+                  const Icon = benefit.icon;
+                  return (
+                    <div 
+                      className="bg-white rounded-xl p-8 shadow-sm hover:shadow-lg transition-all duration-300 border border-accent-text/5 transform hover:-translate-y-1 h-full group"
+                    >
+                      <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-accent-text/10 text-accent-text mb-6 transition-transform duration-300 group-hover:scale-110">
+                        <LottieIcon 
+                          animationData={benefit.animationData} 
+                          fallbackIcon={Icon} 
+                          className="h-8 w-8 transition-transform duration-300 group-hover:scale-110" 
+                        />
+                      </div>
+                      <h3 className="text-2xl font-bold text-content mb-4">
+                        {benefit.title}
+                      </h3>
+                      <p className="text-content/70 leading-relaxed text-lg">
+                        {benefit.description}
+                      </p>
+                    </div>
+                  );
+                })()}
+              </div>
+              <div className="lg:col-span-1">
+                {(() => {
+                  const benefit = benefits[1]; // Connect with Professionals (small)
+                  const Icon = benefit.icon;
+                  return (
+                    <div 
+                      className="bg-white rounded-xl p-8 shadow-sm hover:shadow-lg transition-all duration-300 border border-accent-text/5 transform hover:-translate-y-1 h-full group"
+                    >
+                      <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-accent-text/10 text-accent-text mb-6 transition-transform duration-300 group-hover:scale-110">
+                        <Icon className="h-8 w-8 transition-transform duration-300 group-hover:scale-110" />
+                      </div>
+                      <h3 className="text-xl font-bold text-content mb-4">
+                        {benefit.title}
+                      </h3>
+                      <p className="text-content/70 leading-relaxed">
+                        {benefit.description}
+                      </p>
+                    </div>
+                  );
+                })()}
+              </div>
+            </div>
+
+            {/* Second Row: 1 small + 1 large + 1 small */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
+              <div className="lg:col-span-1">
+                {(() => {
+                  const benefit = benefits[2]; // Build Community (small)
+                  const Icon = benefit.icon;
+                  return (
+                    <div 
+                      className="bg-white rounded-xl p-8 shadow-sm hover:shadow-lg transition-all duration-300 border border-accent-text/5 transform hover:-translate-y-1 h-full group"
+                    >
+                      <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-accent-text/10 text-accent-text mb-6 transition-transform duration-300 group-hover:scale-110">
+                        <Icon className="h-8 w-8 transition-transform duration-300 group-hover:scale-110" />
+                      </div>
+                      <h3 className="text-xl font-bold text-content mb-4">
+                        {benefit.title}
+                      </h3>
+                      <p className="text-content/70 leading-relaxed">
+                        {benefit.description}
+                      </p>
+                    </div>
+                  );
+                })()}
+              </div>
+              <div className="lg:col-span-1">
+                {(() => {
+                  const benefit = benefits[3]; // Learn and Grow (large)
+                  const Icon = benefit.icon;
+                  return (
+                    <div 
+                      className="bg-white rounded-xl p-8 shadow-sm hover:shadow-lg transition-all duration-300 border border-accent-text/5 transform hover:-translate-y-1 h-full group"
+                    >
+                      <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-accent-text/10 text-accent-text mb-6 transition-transform duration-300 group-hover:scale-110">
+                        <Icon className="h-8 w-8 transition-transform duration-300 group-hover:scale-110" />
+                      </div>
+                      <h3 className="text-2xl font-bold text-content mb-4">
+                        {benefit.title}
+                      </h3>
+                      <p className="text-content/70 leading-relaxed text-lg">
+                        {benefit.description}
+                      </p>
+                    </div>
+                  );
+                })()}
+              </div>
+              <div className="lg:col-span-1">
+                {(() => {
+                  const benefit = benefits[4]; // Permaculture Tools (small)
+                  const Icon = benefit.icon;
+                  return (
+                    <div 
+                      className="bg-white rounded-xl p-8 shadow-sm hover:shadow-lg transition-all duration-300 border border-accent-text/5 transform hover:-translate-y-1 h-full group"
+                    >
+                      <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-accent-text/10 text-accent-text mb-6 transition-transform duration-300 group-hover:scale-110">
+                        <Icon className="h-8 w-8 transition-transform duration-300 group-hover:scale-110" />
+                      </div>
+                      <h3 className="text-xl font-bold text-content mb-4">
+                        {benefit.title}
+                      </h3>
+                      <p className="text-content/70 leading-relaxed">
+                        {benefit.description}
+                      </p>
+                    </div>
+                  );
+                })()}
+              </div>
+            </div>
+          </div>
+
+          {/* Mobile Swiper */}
+          <div className="lg:hidden">
+            <Swiper
+              slidesPerView={1.2}
+              centeredSlides={true}
+              spaceBetween={20}
+              pagination={{ clickable: true }}
+              modules={[Pagination, Autoplay]}
+              autoplay={{ delay: 4000, disableOnInteraction: false }}
+              loop={true}
+              className="pb-12"
+            >
+              {benefits.map((benefit, index) => {
+                const Icon = benefit.icon;
+                return (
+                  <SwiperSlide key={index}>
+                    <div className="bg-white rounded-xl p-6 shadow-sm hover:shadow-lg transition-all duration-300 border border-accent-text/5 h-full">
+                      <div className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-accent-text/10 text-accent-text mb-4">
+                        <LottieIcon 
+                          animationData={benefit.animationData} 
+                          fallbackIcon={Icon} 
+                          className="h-7 w-7" 
+                        />
+                      </div>
+                      <h3 className="text-lg font-bold text-content mb-3">
+                        {benefit.title}
+                      </h3>
+                      <p className="text-content/70 leading-relaxed text-sm">
+                        {benefit.description}
+                      </p>
+                    </div>
+                  </SwiperSlide>
+                );
+              })}
+            </Swiper>
           </div>
         </div>
       </section>
@@ -377,10 +517,10 @@ export function Home() {
                   <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                 </div>
                 <div className="p-6 relative">
-                  <div className="absolute -top-10 left-6 bg-accent-text text-white px-4 py-2 rounded-lg shadow-md">
-                    <span className="font-medium">{practitioner.title}</span>
+                  <div className="absolute -top-4 left-6 bg-accent-text text-white px-4 py-2 rounded-lg shadow-md z-10">
+                    <span className="font-medium text-sm">{practitioner.title}</span>
                   </div>
-                  <h3 className="text-xl font-bold text-content mt-2 mb-3">
+                  <h3 className="text-xl font-bold text-content mt-6 mb-3">
                     {practitioner.name}
                   </h3>
                   <div className="flex justify-between items-center">
@@ -622,7 +762,7 @@ export function Home() {
                   ×
                 </button>
               </div>
-              <Auth onSuccess={() => setShowAuthModal(false)} />
+              <Auth />
             </div>
           </div>
         </div>

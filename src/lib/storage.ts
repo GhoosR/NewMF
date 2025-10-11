@@ -1,6 +1,16 @@
 import { supabase } from './supabase';
 import Compressor from 'compressorjs';
 
+// Helper function to check if file is HEIC/HEIF format
+export function isHEICFile(file: File): boolean {
+  const fileName = file.name.toLowerCase();
+  const fileType = file.type.toLowerCase();
+  return fileType === 'image/heic' || 
+         fileType === 'image/heif' || 
+         fileName.endsWith('.heic') || 
+         fileName.endsWith('.heif');
+}
+
 // Helper function to convert image to WebP format
 async function convertToWebP(file: File, quality: number = 0.8): Promise<File> {
   return new Promise((resolve, reject) => {
@@ -89,7 +99,12 @@ export async function uploadMedia(file: File, bucket: StorageBucket): Promise<st
     if (!user) throw new Error('No user found');
 
     const isVideo = file.type.startsWith('video/');
-    const isImage = file.type.startsWith('image/');
+    // Accept HEIC/HEIF files (common on iPhones) along with standard image types
+    const isImage = file.type.startsWith('image/') || 
+                    file.type === 'image/heic' || 
+                    file.type === 'image/heif' ||
+                    file.name.toLowerCase().endsWith('.heic') ||
+                    file.name.toLowerCase().endsWith('.heif');
 
     if (!isVideo && !isImage) {
       throw new Error('Only image and video files are supported');
@@ -175,12 +190,15 @@ export async function compressImage(file: File, options: {
   success?: (result: File) => void;
   error?: (err: any) => void;
 } = {}): Promise<File> {
+  // Note: Compressorjs automatically handles HEIC/HEIF files from iPhones
+  // and converts them to JPEG/PNG format
   return new Promise((resolve, reject) => {
     new Compressor(file, {
       quality: options.quality || 0.8, // 80% quality by default
       maxWidth: options.maxWidth || 1920, // Max width 1920px by default
       maxHeight: options.maxHeight || 1080, // Max height 1080px by default
       convertSize: options.convertSize || 1000000, // Convert to JPG if > 1MB by default
+      mimeType: 'auto', // Auto-detect and convert formats (handles HEIC)
       success: (result) => {
         // Create a new File object from the compressed Blob
         const compressedFile = new File([result], file.name, {
