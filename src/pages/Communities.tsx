@@ -159,7 +159,7 @@ export function Communities() {
       {/* Mobile Full-Width Header */}
       <div className="lg:hidden relative h-64 overflow-hidden">
         <img
-          src="https://afvltpqnhmaxanirwnqz.supabase.co/storage/v1/object/public/community-images/59bed50f-5ccf-4265-87fa-7743af34d361/Wellness-communities.webp"
+          src="https://afvltpqnhmaxanirwnqz.supabase.co/storage/v1/object/public/listing-images/123c446f-e80c-409d-a3d3-e6fdc14949d4/humans-connecting.png"
           alt="Join Wellness Communities"
           className="w-full h-full object-cover shadow-none"
         />
@@ -224,7 +224,7 @@ export function Communities() {
                 </div>
                 <div className="hidden lg:block">
                   <img 
-                    src="https://afvltpqnhmaxanirwnqz.supabase.co/storage/v1/object/public/community-images/59bed50f-5ccf-4265-87fa-7743af34d361/Wellness-communities.webp" 
+                    src="https://afvltpqnhmaxanirwnqz.supabase.co/storage/v1/object/public/listing-images/123c446f-e80c-409d-a3d3-e6fdc14949d4/humans-connecting.png" 
                     alt="Wellness Communities"
                     className="w-full h-auto rounded-xl"
                   />
