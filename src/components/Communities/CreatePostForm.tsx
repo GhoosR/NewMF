@@ -7,7 +7,7 @@ import { createNotification } from '../../lib/notifications';
 
 interface CreatePostFormProps {
   communityId: string;
-  onSuccess: () => void;
+  onSuccess: (postId?: string) => void;
 }
 
 export function CreatePostForm({ communityId, onSuccess }: CreatePostFormProps) {
@@ -69,14 +69,16 @@ export function CreatePostForm({ communityId, onSuccess }: CreatePostFormProps) 
       );
 
       // Create post
-      const { error: insertError } = await supabase
+      const { data: postData, error: insertError } = await supabase
         .from('community_posts')
         .insert([{
           community_id: communityId,
           user_id: user.id,
           content,
           images: mediaUrls.filter(Boolean)
-        }]);
+        }])
+        .select('id')
+        .single();
 
       if (insertError) throw insertError;
 
@@ -113,7 +115,7 @@ export function CreatePostForm({ communityId, onSuccess }: CreatePostFormProps) 
         }
       }, 100);
       
-      onSuccess();
+      onSuccess(postData?.id);
     } catch (err: any) {
       setError(err.message);
     } finally {

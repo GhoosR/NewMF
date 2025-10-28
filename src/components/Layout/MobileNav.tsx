@@ -94,32 +94,6 @@ export function MobileNav({ isOpen, onClose }: MobileNavProps) {
           </button>
         </div>
 
-        {/* Profile Section (if logged in) */}
-        {profile && (
-          <div className="p-6 animate-fade-in">
-            <Link
-              to={`/profile/${profile.username}/listings`}
-              className="flex items-center space-x-4 group"
-              onClick={onClose}
-            >
-              <Avatar 
-                url={profile.avatar_url} 
-                size="md"
-                username={profile.username}
-                editable={false}
-              />
-              <div>
-                <div className="text-xl font-medium text-content group-hover:text-accent-text transition-colors">
-                  {profile.username}
-                </div>
-                <div className="text-content/60">
-                  @{profile.id.slice(0, 8)}
-                </div>
-              </div>
-            </Link>
-          </div>
-        )}
-
         {/* Navigation */}
         <div className="flex-1 px-4 py-6 space-y-8 overflow-y-auto">
           {/* Social */}

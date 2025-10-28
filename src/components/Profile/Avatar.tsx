@@ -11,6 +11,7 @@ interface AvatarProps {
   username?: string;
   onUpdate?: () => void;
   editable?: boolean;
+  disableLink?: boolean;
 }
 
 export function Avatar({ 
@@ -19,7 +20,8 @@ export function Avatar({
   userId,
   username,
   onUpdate,
-  editable = false 
+  editable = false,
+  disableLink = false
 }: AvatarProps) {
   const [avatarUrl, setAvatarUrl] = React.useState<string | undefined>(url);
   const [loading, setLoading] = React.useState(false);
@@ -33,7 +35,7 @@ export function Avatar({
         .select('avatar_url')
         .eq('id', userId)
         .maybeSingle()
-        .then(({ data }) => {
+        .then(({ data, error }) => {
           if (data?.avatar_url) {
             setAvatarUrl(data.avatar_url);
           }
@@ -47,7 +49,7 @@ export function Avatar({
     } else {
       setAvatarUrl(url);
     }
-  }, [url, userId, loading]);
+  }, [url, userId]);
 
   const sizeClasses = {
     sm: 'h-8 w-8',
@@ -113,7 +115,7 @@ export function Avatar({
   );
 
   // If this Avatar is being rendered inside a Link component, don't wrap it in another Link
-  if (username && !editable && !window.location.pathname.startsWith('/profile/')) {
+  if (username && !editable && !disableLink && !window.location.pathname.startsWith('/profile/')) {
     return (
       <Link to={`/profile/${username}/listings`} className="block">
         {content}

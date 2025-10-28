@@ -68,6 +68,15 @@ export function Header({ onLogin, isAuthenticated, onMenuClick }: HeaderProps) {
                 <MessageSquare className="h-5 w-5" />
               </Link>
               
+              {/* Mobile Search Button */}
+              <button
+                onClick={() => setShowSearch(true)}
+                className="lg:hidden p-2 text-accent-text hover:bg-accent-base/20 rounded-full"
+                title="Search"
+              >
+                <Search className="h-5 w-5" />
+              </button>
+              
               <NotificationBell />
               {!isPro && (
                 <>
