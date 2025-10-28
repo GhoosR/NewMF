@@ -10,6 +10,7 @@ import { uploadMedia } from '../../lib/storage';
 import { renderContentWithMentions } from '../../lib/utils/mentionUtils';
 import { UserMentionInput } from '../ui/UserMentionInput';
 import { createNotification } from '../../lib/notifications';
+import { useAdmin } from '../../lib/hooks/useAdmin';
 import type { CommunityPostType } from '../../types/communities';
 
 interface CommunityPostProps {
@@ -37,6 +38,7 @@ export function CommunityPost({ post, isAdmin = false, onPin, onUnpin, onDelete 
   const postRef = React.useRef<HTMLDivElement>(null);
   const [mentionedUsers, setMentionedUsers] = useState<string[]>([]);
   const [currentUser, setCurrentUser] = useState<any>(null);
+  const { isAdmin: globalAdmin } = useAdmin();
 
   // Get current user on mount
   React.useEffect(() => {
@@ -258,7 +260,7 @@ export function CommunityPost({ post, isAdmin = false, onPin, onUnpin, onDelete 
                 {formatDate(new Date(post.created_at))}
               </span>
             </div>
-            {(isOwnPost || isAdmin) && (
+            {(isOwnPost || isAdmin || globalAdmin) && (
               <div className="relative" ref={menuRef}>
                 <button 
                   onClick={() => setShowMenu(!showMenu)}
@@ -297,23 +299,23 @@ export function CommunityPost({ post, isAdmin = false, onPin, onUnpin, onDelete 
                       </>
                     )}
                     {isOwnPost && (
-                      <>
-                        <button
-                          onClick={handleEdit}
-                          className="w-full text-left px-4 py-2 text-sm text-content hover:bg-accent-base/10 transition-colors flex items-center"
-                        >
-                          <Edit className="h-4 w-4 mr-2" />
-                          Edit
-                        </button>
-                        <button
-                          onClick={handleDeletePost}
-                          className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 disabled:opacity-50 transition-colors flex items-center"
-                          disabled={isDeleting}
-                        >
-                          <Trash2 className="h-4 w-4 mr-2" />
-                          Delete
-                        </button>
-                      </>
+                      <button
+                        onClick={handleEdit}
+                        className="w-full text-left px-4 py-2 text-sm text-content hover:bg-accent-base/10 transition-colors flex items-center"
+                      >
+                        <Edit className="h-4 w-4 mr-2" />
+                        Edit
+                      </button>
+                    )}
+                    {(isOwnPost || isAdmin || globalAdmin) && (
+                      <button
+                        onClick={handleDeletePost}
+                        className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 disabled:opacity-50 transition-colors flex items-center"
+                        disabled={isDeleting}
+                      >
+                        <Trash2 className="h-4 w-4 mr-2" />
+                        {isDeleting ? 'Deleting...' : 'Delete'}
+                      </button>
                     )}
                   </div>
                 )}
@@ -489,7 +491,7 @@ export function CommunityPost({ post, isAdmin = false, onPin, onUnpin, onDelete 
                 className="flex items-center text-sm text-content/60 hover:text-accent-text transition-colors"
               >
                 <MessageCircle className="h-4 w-4 mr-1" />
-                <span>{post._count?.comments || 0} comments</span>
+                <span>{post.community_post_comments?.[0]?.count || 0} comments</span>
               </button>
             </div>
           </div>
@@ -500,10 +502,18 @@ export function CommunityPost({ post, isAdmin = false, onPin, onUnpin, onDelete 
                 postId={post.id} 
                 onCommentAdded={() => {
                   // Refresh comment count
-                  if (post._count) {
-                    post._count.comments = (post._count.comments || 0) + 1;
+                  if (post.community_post_comments && post.community_post_comments.length > 0) {
+                    post.community_post_comments[0].count = (post.community_post_comments[0].count || 0) + 1;
+                  } else {
+                    post.community_post_comments = [{ count: 1 }];
                   }
-                }} 
+                }}
+                onCommentDeleted={() => {
+                  // Refresh comment count
+                  if (post.community_post_comments && post.community_post_comments.length > 0) {
+                    post.community_post_comments[0].count = Math.max(0, (post.community_post_comments[0].count || 0) - 1);
+                  }
+                }}
               />
             </div>
           )}

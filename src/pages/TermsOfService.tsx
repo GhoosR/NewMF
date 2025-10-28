@@ -51,9 +51,18 @@ export function TermsOfService() {
               <h2 className="text-xl font-semibold text-content mb-4">Account Terms</h2>
               <div className="space-y-4 text-content/80">
                 <p>
-                  You must be at least 18 years old to use this Service. You are responsible for maintaining 
+                  You must be at least 18 years old to use this Service. Users between 13-17 years old may use the Service only with parental consent and supervision. You are responsible for maintaining 
                   the security of your account and password.
                 </p>
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                  <div className="flex items-center mb-2">
+                    <AlertCircle className="h-5 w-5 text-blue-500 mr-2" />
+                    <span className="font-medium text-blue-800">Age Verification</span>
+                  </div>
+                  <p className="text-blue-800">
+                    By creating an account, you represent and warrant that you meet the age requirements and have the legal capacity to enter into this agreement.
+                  </p>
+                </div>
                 <h3 className="font-medium text-content">Professional Membership</h3>
                 <ul className="list-disc pl-6 space-y-2">
                   <li>Professional membership requires a valid subscription</li>
@@ -135,6 +144,32 @@ export function TermsOfService() {
               </div>
             </section>
 
+            {/* Medical Disclaimer */}
+            <section>
+              <h2 className="text-xl font-semibold text-content mb-4">Medical and Wellness Disclaimer</h2>
+              <div className="space-y-4 text-content/80">
+                <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                  <div className="flex items-center mb-2">
+                    <AlertCircle className="h-5 w-5 text-red-500 mr-2" />
+                    <span className="font-medium text-red-800">Important Medical Notice</span>
+                  </div>
+                  <p className="text-red-800 mb-2">
+                    <strong>Mindful Family is not a medical service provider.</strong> The information, content, and services provided through our platform are for informational and educational purposes only.
+                  </p>
+                  <ul className="list-disc pl-6 text-red-800 space-y-1">
+                    <li>Our platform does not provide medical advice, diagnosis, or treatment</li>
+                    <li>Wellness services offered by practitioners are not a substitute for professional medical care</li>
+                    <li>Always consult with qualified healthcare professionals for medical concerns</li>
+                    <li>Do not delay seeking professional medical advice because of information on our platform</li>
+                    <li>In case of medical emergency, contact emergency services immediately</li>
+                  </ul>
+                </div>
+                <p>
+                  Practitioners on our platform are independent service providers. We do not endorse, recommend, or guarantee the quality of services provided by any practitioner. Users are responsible for evaluating practitioners and their services.
+                </p>
+              </div>
+            </section>
+
             {/* Limitation of Liability */}
             <section>
               <h2 className="text-xl font-semibold text-content mb-4">Limitation of Liability</h2>
@@ -156,6 +191,36 @@ export function TermsOfService() {
               </div>
             </section>
 
+            {/* Dispute Resolution */}
+            <section>
+              <h2 className="text-xl font-semibold text-content mb-4">Dispute Resolution</h2>
+              <div className="space-y-4 text-content/80">
+                <p>
+                  Any disputes arising from these Terms or your use of the Service will be resolved through binding arbitration rather than in court, except that you may assert claims in small claims court if your claims qualify.
+                </p>
+                <h3 className="font-medium text-content">Arbitration Process</h3>
+                <ul className="list-disc pl-6 space-y-2">
+                  <li>Disputes will be resolved through individual arbitration, not class action</li>
+                  <li>Arbitration will be conducted by a neutral arbitrator</li>
+                  <li>You may opt out of arbitration within 30 days of account creation</li>
+                  <li>Arbitration will be conducted in English</li>
+                </ul>
+              </div>
+            </section>
+
+            {/* Governing Law */}
+            <section>
+              <h2 className="text-xl font-semibold text-content mb-4">Governing Law</h2>
+              <div className="space-y-4 text-content/80">
+                <p>
+                  These Terms shall be governed by and construed in accordance with the laws of the European Union and applicable national laws, without regard to conflict of law principles.
+                </p>
+                <p>
+                  For users in the European Union, these Terms are subject to EU consumer protection laws and regulations.
+                </p>
+              </div>
+            </section>
+
             {/* Changes to Terms */}
             <section>
               <h2 className="text-xl font-semibold text-content mb-4">Changes to Terms</h2>
@@ -164,6 +229,9 @@ export function TermsOfService() {
                   We reserve the right to modify or replace these terms at any time. We will provide notice 
                   of any changes by posting the new Terms of Service on this page and updating the "Last updated" 
                   date.
+                </p>
+                <p>
+                  For material changes, we will provide additional notice through email or prominent notice on our Service at least 30 days before the changes take effect.
                 </p>
               </div>
             </section>
@@ -179,8 +247,7 @@ export function TermsOfService() {
               </p>
               <div className="mt-4 bg-accent-base/10 rounded-lg p-4">
                 <p className="text-content/80">
-                  Email: legal@mindfulfamily.co<br />
-                  Address: [Your Business Address]
+                  Email: support@mindful.family<br />
                 </p>
               </div>
             </section>

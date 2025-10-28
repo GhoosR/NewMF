@@ -91,7 +91,7 @@ export function CommunityDetails() {
                 username,
                 avatar_url
               ),
-              _count: community_post_comments (count)
+              community_post_comments(count)
             `)
             .eq('community_id', id)
             .order('pinned', { ascending: false })

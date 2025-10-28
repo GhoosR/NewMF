@@ -1,11 +1,20 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Send } from 'lucide-react';
+import { Send, Mic, MessageCircle } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Avatar } from '../Profile/Avatar';
+import { VoiceRecorder } from './VoiceRecorder';
+import { VoiceMessagePlayer } from './VoiceMessagePlayer';
 
 export interface Message {
   id: string;
   content: string;
+  messageType?: 'text' | 'voice' | 'file';
+  audioUrl?: string;
+  audioDuration?: number;
+  fileUrl?: string;
+  fileName?: string;
+  fileSize?: number;
+  fileType?: string;
   created_at: string;
   sender: {
     id: string;
@@ -21,6 +30,7 @@ export interface Message {
 interface ChatCardProps {
   initialMessages?: Message[];
   onSendMessage?: (message: string) => void;
+  onSendVoiceMessage?: (audioBlob: Blob, duration: number) => Promise<void>;
   onLoadMore?: (oldestMessageCreatedAt: string | null) => Promise<Message[]>;
   className?: string;
   initialMessage?: string | null;
@@ -29,6 +39,7 @@ interface ChatCardProps {
 export function ChatCard({
   initialMessages = [],
   onSendMessage,
+  onSendVoiceMessage,
   onLoadMore,
   className,
   initialMessage,
@@ -198,7 +209,7 @@ export function ChatCard({
       <div className="absolute inset-0 bottom-[80px] bg-gray-50">
         <div 
           ref={messagesContainerRef}
-          className="h-full overflow-y-auto px-4 py-6 lg:px-6 space-y-4"
+          className="h-full overflow-y-auto px-4 py-4 space-y-1"
           onScroll={handleScroll}
         >
           {loadingMore && (
@@ -217,54 +228,54 @@ export function ChatCard({
           )}
 
           {groupedMessages.map((group, groupIndex) => (
-            <div key={`group-${groupIndex}`} className="space-y-1">
+            <div key={`group-${groupIndex}`} className="space-y-0.5">
               {group.map((message, messageIndex) => {
                 const isFirstInGroup = messageIndex === 0;
                 
                 return (
                   <div 
                     key={message.id} 
-                    className={`flex ${message.sender.isCurrentUser ? 'justify-end' : 'justify-start'}`}
+                    className="group hover:bg-gray-100 rounded-md px-2 py-0.5 -mx-2 -my-0.5 transition-colors"
                   >
-                    <div className={`flex ${message.sender.isCurrentUser ? 'flex-row-reverse' : 'flex-row'} max-w-[80%]`}>
-                      {/* Avatar - only show for first message in group */}
-                      {isFirstInGroup && !message.sender.isCurrentUser && (
-                        <div className="flex-shrink-0 mr-2">
-                          <Link to={`/profile/${message.sender.username}/listings`}>
-                            <Avatar
-                              url={message.sender.avatar_url}
-                              size="sm"
-                              userId={message.sender.id}
-                              editable={false}
-                            />
-                          </Link>
-                        </div>
-                      )}
+                    <div className="flex space-x-3">
+                      {/* Avatar - always reserve space for consistent alignment */}
+                      <div className="flex-shrink-0 w-10 h-10">
+                        {isFirstInGroup ? (
+                          <Avatar
+                            url={message.sender.avatar_url}
+                            size="sm"
+                            userId={message.sender.id}
+                            editable={false}
+                          />
+                        ) : (
+                          <div className="w-10 h-10" />
+                        )}
+                      </div>
                       
-                      <div className={`flex flex-col ${message.sender.isCurrentUser ? 'items-end' : 'items-start'}`}>
+                      <div className="flex-1 min-w-0">
                         {/* Username and timestamp - only for first message in group */}
                         {isFirstInGroup && (
-                          <div className={`flex items-center mb-1 ${message.sender.isCurrentUser ? 'flex-row-reverse' : 'flex-row'}`}>
-                            <span className="text-xs text-gray-500 mx-2">
+                          <div className="flex items-center space-x-2 mb-1">
+                            <span className="text-sm font-semibold text-gray-900 hover:text-accent-text cursor-pointer">
+                              {message.sender.username}
+                            </span>
+                            <span className="text-xs text-gray-500">
                               {message.timestamp}
                             </span>
-                            {!message.sender.isCurrentUser && (
-                              <span className="font-medium text-sm text-gray-700">
-                                {message.sender.username}
-                              </span>
-                            )}
                           </div>
                         )}
                         
-                        {/* Message bubble */}
-                        <div 
-                          className={`px-4 py-2 rounded-xl break-words ${
-                            message.sender.isCurrentUser 
-                              ? 'bg-accent-text text-white' 
-                              : 'bg-white text-gray-800 border border-gray-200'
-                          }`}
-                        >
-                          {message.content}
+                        {/* Message content */}
+                        <div className="text-lg md:text-base text-gray-800 leading-relaxed">
+                          {message.messageType === 'voice' && message.audioUrl ? (
+                            <VoiceMessagePlayer 
+                              audioUrl={message.audioUrl}
+                              duration={message.audioDuration}
+                              className="bg-gray-100 rounded-lg p-2 border border-gray-200"
+                            />
+                          ) : (
+                            <span className="whitespace-pre-wrap break-words">{message.content}</span>
+                          )}
                         </div>
                       </div>
                     </div>
@@ -278,7 +289,19 @@ export function ChatCard({
       </div>
       
       {/* Chat Input */}
-      <ChatInput onSendMessage={() => handleSubmit({ preventDefault: () => {}, type: 'submit' } as React.FormEvent)} />
+      <ChatInput 
+        onSendMessage={async (message: string) => {
+          if (!message.trim()) return;
+          try {
+            await onSendMessage?.(message);
+            setInputValue('');
+            setShouldScrollToBottom(true);
+          } catch (err) {
+            console.error('Error sending message:', err);
+          }
+        }}
+        onSendVoiceMessage={onSendVoiceMessage}
+      />
     </div>
   );
 }
@@ -286,11 +309,13 @@ export function ChatCard({
 // Separate ChatInput component
 interface ChatInputProps {
   onSendMessage: (message: string) => Promise<void>;
+  onSendVoiceMessage?: (audioBlob: Blob, duration: number) => Promise<void>;
 }
 
-export function ChatInput({ onSendMessage }: ChatInputProps) {
+export function ChatInput({ onSendMessage, onSendVoiceMessage }: ChatInputProps) {
   const [inputValue, setInputValue] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showVoiceRecorder, setShowVoiceRecorder] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -323,34 +348,78 @@ export function ChatInput({ onSendMessage }: ChatInputProps) {
     }
   };
 
+  const handleSendVoiceMessage = async (audioBlob: Blob, duration: number) => {
+    if (!onSendVoiceMessage) return;
+    
+    try {
+      await onSendVoiceMessage(audioBlob, duration);
+      setShowVoiceRecorder(false);
+    } catch (err) {
+      console.error('Error sending voice message:', err);
+      alert('Failed to send voice message. Please try again.');
+    }
+  };
+
   return (
     <div className="absolute bottom-0 left-0 right-0 h-[90px] bg-white border-t border-gray-200 p-2 lg:p-3">
       <form onSubmit={handleSubmit}>
         <div className="flex items-center gap-3 h-full">
-          <div className="flex-1 bg-gray-50 rounded-full border border-gray-200 overflow-hidden focus-within:border-accent-text focus-within:ring-1 focus-within:ring-accent-text/20">
-            <input
-              ref={inputRef}
-              type="text"
-              value={inputValue}
-              onChange={(e) => setInputValue(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' && !e.shiftKey) {
-                  e.preventDefault();
-                  handleSubmit(e);
-                }
-              }}
-              placeholder="Type a message..."
-              className="w-full px-4 py-3 bg-transparent border-none text-gray-800 placeholder:text-gray-400 focus:outline-none focus:ring-0 text-base"
+          {/* Voice Message Button */}
+          {onSendVoiceMessage && (
+            <button
+              type="button"
+              onClick={() => setShowVoiceRecorder(!showVoiceRecorder)}
               disabled={loading}
-            />
-          </div>
-          <button
-            type="submit"
-            disabled={!inputValue.trim() || loading}
-            className="w-12 h-12 rounded-full bg-accent-text text-white hover:bg-accent-text/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0 flex items-center justify-center shadow-sm"
-          >
-            <Send className="h-5 w-5" />
-          </button>
+              className="w-12 h-12 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-600 hover:text-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0 flex items-center justify-center"
+              title={showVoiceRecorder ? "Switch to text input" : "Record voice message"}
+            >
+              {showVoiceRecorder ? (
+                <MessageCircle className="h-5 w-5" />
+              ) : (
+                <Mic className="h-5 w-5" />
+              )}
+            </button>
+          )}
+          
+          {showVoiceRecorder ? (
+            // Voice recording interface - centered
+            <div className="flex-1 flex items-center justify-center">
+              <VoiceRecorder
+                onSendVoiceMessage={handleSendVoiceMessage}
+                onCancel={() => setShowVoiceRecorder(false)}
+                disabled={loading}
+              />
+            </div>
+          ) : (
+            // Text input interface
+            <div className="flex-1 bg-gray-50 rounded-full border border-gray-200 overflow-hidden focus-within:border-accent-text focus-within:ring-1 focus-within:ring-accent-text/20">
+              <input
+                ref={inputRef}
+                type="text"
+                value={inputValue}
+                onChange={(e) => setInputValue(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    handleSubmit(e);
+                  }
+                }}
+                placeholder="Type a message..."
+                className="w-full px-4 py-3 bg-transparent border-none text-gray-800 placeholder:text-gray-400 focus:outline-none focus:ring-0 text-lg"
+                disabled={loading}
+              />
+            </div>
+          )}
+          
+          {!showVoiceRecorder && (
+            <button
+              type="submit"
+              disabled={!inputValue.trim() || loading}
+              className="w-12 h-12 rounded-full bg-accent-text text-white hover:bg-accent-text/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0 flex items-center justify-center shadow-sm"
+            >
+              <Send className="h-5 w-5" />
+            </button>
+          )}
         </div>
       </form>
     </div>

@@ -347,10 +347,9 @@ export function VenueForm({ onClose, onSuccess, editVenue }: VenueFormProps) {
               label="Venue Images"
               onChange={(files) => setImages(files)}
               maxFiles={5}
-              maxSize={2}
               accept="image/*"
               multiple
-              description="Upload images of your venue (max 5 images)"
+              description="Upload images of your venue (max 5 images, will be automatically compressed)"
             />
             
             {existingImages.length > 0 && (

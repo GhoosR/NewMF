@@ -17,26 +17,34 @@ export async function signUp(
   username: string,
   userType: 'member' | 'professional' = 'member'
 ) {
+  console.log('🔧 signUp function called with:', { email, username, userType });
+  
   // First check username availability
   const isUsernameAvailable = await checkUsernameAvailability(username);
+  console.log('✅ Username available:', isUsernameAvailable);
   if (!isUsernameAvailable) {
     throw new Error('This username is already taken. Please choose another one.');
   }
 
   // Create auth user with auto-confirm enabled
+  console.log('📧 Creating auth user...');
   const { data: { user, session }, error: signUpError } = await supabase.auth.signUp({
     email,
     password,
     options: {
       data: {
         username,
-        isNewUser: true
+        isNewUser: true,
+        needsOnboarding: true  // Add flag to prevent immediate redirect
       },
       emailRedirectTo: `${window.location.origin}`,
     }
   });
 
+  console.log('🔍 Auth signup result:', { user: user?.id, session: !!session, error: signUpError });
+
   if (signUpError) {
+    console.error('❌ Auth signup error:', signUpError);
     // Handle specific error cases
     if (signUpError.message.includes('Password')) {
       throw new Error('Password must be at least 6 characters long');
@@ -48,45 +56,46 @@ export async function signUp(
   }
 
   if (!user) throw new Error('Signup failed. Please try again.');
+  console.log('✅ Auth user created:', user.id);
 
-  try {
-    // Create user profile
-    const { error: profileError } = await supabase
-      .from('users')
-      .insert([{
-        id: user.id,
-        username,
-        user_type: userType,
-        subscription_status: 'inactive',
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
-      }]);
+  // Create user profile (or update if exists) - wait for it to complete
+  console.log('👤 Creating user profile...');
+  const { error: profileError } = await supabase
+    .from('users')
+    .upsert([{
+      id: user.id,
+      username,
+      user_type: userType,
+      subscription_status: 'inactive',
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    }]);
 
-    if (profileError) {
-      // If profile creation fails, clean up the auth user
-      await supabase.auth.signOut();
-      throw profileError;
-    }
-
-    // Send welcome email
-    try {
-      await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/welcome-email`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${session?.access_token}`
-        }
-      });
-    } catch (emailError) {
-      console.error('Error sending welcome email:', emailError);
-      // Don't throw error here - we don't want to fail signup if email fails
-    }
-    return { user, session };
-  } catch (error) {
-    // Clean up auth user if profile creation fails
-    await supabase.auth.signOut();
-    throw error;
+  if (profileError) {
+    console.error('❌ Profile creation error:', profileError);
+    throw new Error(`Failed to create user profile: ${profileError.message}`);
+  } else {
+    console.log('✅ User profile created successfully');
   }
+
+  // Send welcome email - don't wait for it
+  console.log('📧 Sending welcome email...');
+  fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/welcome-email`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${session?.access_token}`
+    }
+  })
+  .then(() => {
+    console.log('✅ Welcome email sent');
+  })
+  .catch((emailError) => {
+    console.error('Error sending welcome email:', emailError);
+  });
+  
+  console.log('🎉 SignUp function completed successfully, returning:', { user: user.id, session: !!session });
+  return { user, session };
 }
 
 export async function signIn(email: string, password: string) {

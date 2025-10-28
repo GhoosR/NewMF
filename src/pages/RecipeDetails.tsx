@@ -5,6 +5,7 @@ import { supabase } from '../lib/supabase';
 import { Avatar } from '../components/Profile/Avatar';
 import { Username } from '../components/Profile/Username';
 import { CreateRecipeModal } from '../components/Recipes/CreateRecipeModal';
+import { Meta } from '../components/Meta';
 import { formatCategoryName } from '../lib/utils/formatters';
 import type { Recipe } from '../types/recipes';
 
@@ -139,7 +140,14 @@ export function RecipeDetails() {
   const totalTime = recipe.prep_time + recipe.cook_time;
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <>
+      <Meta 
+        title={`${recipe.title} - Healthy Recipe`}
+        description={`Try this delicious ${recipe.title} recipe. ${recipe.description.substring(0, 150)}...`}
+        image={recipe.image_url}
+        type="article"
+      />
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <Link 
         to="/recipes"
         className="inline-flex items-center text-accent-text hover:text-accent-text/80 mb-6"
@@ -287,6 +295,7 @@ export function RecipeDetails() {
           }}
         />
       )}
-    </div>
+      </div>
+    </>
   );
 }

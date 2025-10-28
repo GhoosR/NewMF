@@ -4,6 +4,7 @@ export interface Course {
   id: string;
   user_id: string;
   title: string;
+  slug: string;
   description: string;
   category: string;
   language: string;

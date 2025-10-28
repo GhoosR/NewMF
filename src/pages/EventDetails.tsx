@@ -8,6 +8,7 @@ import { BookmarkButton } from '../components/BookmarkButton';
 import { EventForm } from '../components/Listings/Forms/EventForm';
 import { TicketPurchaseModal } from '../components/Events/TicketPurchaseModal';
 import { ImageGalleryModal } from '../components/ui/ImageGalleryModal';
+import { Meta } from '../components/Meta';
 import { formatDate, formatTime } from '../lib/utils/dateUtils';
 import { formatCategoryName } from '../lib/utils/formatters';
 import type { Event } from '../types/events';
@@ -120,7 +121,14 @@ export function EventDetails() {
   const hasTickets = event.price > 0 && event.ticket_url;
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <>
+      <Meta 
+        title={`${event.title} - Wellness Event`}
+        description={`Join us for ${event.title} on ${formatDate(event.start_date)}. ${event.description.substring(0, 150)}...`}
+        image={event.image_url}
+        type="event"
+      />
+      <div className="min-h-screen bg-gray-50">
       <div className="w-full px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto py-8">
         <Link 
           to="/events"
@@ -313,6 +321,7 @@ export function EventDetails() {
           }}
         />
       )}
-    </div>
+      </div>
+    </>
   );
 }

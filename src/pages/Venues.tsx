@@ -1,10 +1,12 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { VenueCard } from '../components/Venues/VenueCard';
 import { VenueFilters } from '../components/Venues/Filters/VenueFilters';
 import { VenueForm } from '../components/Listings/Forms/VenueForm';
 import { Hero } from '../components/Hero';
 import { Meta } from '../components/Meta';
 import { supabase } from '../lib/supabase';
+import { europeanCountries } from '../lib/constants/countries';
 import type { Venue } from '../types/venues';
 
 interface Filters {
@@ -15,6 +17,7 @@ interface Filters {
 }
 
 export function Venues() {
+  const [searchParams] = useSearchParams();
   const [venues, setVenues] = useState<Venue[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -25,34 +28,33 @@ export function Venues() {
     capacity: '',
     countries: []
   });
+  const userHasInteracted = useRef(false);
+
+  // Initialize filters from URL parameters
+  useEffect(() => {
+    const countryParam = searchParams.get('country');
+    
+    if (countryParam) {
+      setFilters(prev => ({
+        ...prev,
+        countries: [countryParam]
+      }));
+    }
+  }, [searchParams]);
 
   useEffect(() => {
     async function fetchVenues() {
       try {
+        // Only use URL parameter if user hasn't interacted with filters yet
+        const countryParam = searchParams.get('country');
+        const effectiveFilters = (countryParam && !userHasInteracted.current)
+          ? { ...filters, countries: [countryParam] }
+          : filters;
+          
         let query = supabase
           .from('venues')
           .select(`
-            id,
-            name,
-            description,
-            country,
-            address,
-            amenities,
-            capacity,
-            price,
-            currency,
-            images,
-            venue_type,
-            contact_email,
-            contact_phone,
-            sleeping_places,
-            bedrooms,
-            bathrooms,
-            kitchens,
-            approval_status,
-            created_at,
-            updated_at,
-            slug,
+            *,
             user:users (
               id,
               username,
@@ -63,20 +65,26 @@ export function Venues() {
           .eq('approval_status', 'approved')
           .not('slug', 'is', null); // Ensure we only get venues with valid slugs
 
-        if (filters.venueTypes.length > 0) {
-          query = query.in('venue_type', filters.venueTypes);
+        if (effectiveFilters.venueTypes.length > 0) {
+          query = query.in('venue_type', effectiveFilters.venueTypes);
         }
 
-        if (filters.countries.length > 0) {
-          query = query.in('country', filters.countries);
+        if (effectiveFilters.countries.length > 0) {
+          const expandedCountries = Array.from(new Set(
+            effectiveFilters.countries.flatMap((c) => {
+              const match = europeanCountries.find(ec => ec.value === c || ec.label === c);
+              return match ? [match.value, match.label] : [c];
+            })
+          ));
+          query = query.in('country', expandedCountries);
         }
 
-        if (filters.amenities.length > 0) {
-          query = query.contains('amenities', filters.amenities);
+        if (effectiveFilters.amenities.length > 0) {
+          query = query.contains('amenities', effectiveFilters.amenities);
         }
 
-        if (filters.capacity) {
-          switch (filters.capacity) {
+        if (effectiveFilters.capacity) {
+          switch (effectiveFilters.capacity) {
             case 'under_20':
               query = query.lte('capacity', 19);
               break;
@@ -94,6 +102,7 @@ export function Venues() {
 
         const { data, error } = await query;
         if (error) throw error;
+        
         setVenues(data || []);
       } catch (err: any) {
         setError(err.message);
@@ -103,9 +112,12 @@ export function Venues() {
     }
 
     fetchVenues();
-  }, [filters]);
+  }, [filters, searchParams]);
 
   const handleFilterChange = (filterType: keyof Filters, values: string[]) => {
+    // Mark that user has interacted with filters
+    userHasInteracted.current = true;
+    
     setFilters(prev => ({
       ...prev,
       [filterType]: filterType === 'capacity'
@@ -124,9 +136,9 @@ export function Venues() {
       {/* Mobile Full-Width Header */}
       <div className="lg:hidden relative h-64 overflow-hidden">
         <img
-          src="https://afvltpqnhmaxanirwnqz.supabase.co/storage/v1/object/public/blog-images/59bed50f-5ccf-4265-87fa-7743af34d361/Wellness%20venue%20finder.png"
+          src="https://afvltpqnhmaxanirwnqz.supabase.co/storage/v1/object/public/listing-images/123c446f-e80c-409d-a3d3-e6fdc14949d4/wellness-nature-venue.png"
           alt="Explore Wellness Venues"
-          className="w-full h-full object-cover shadow-none"
+          className="w-full h-full object-cover object-bottom shadow-none"
         />
         <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-gray-50"></div>
         <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-gray-50"></div>
@@ -153,7 +165,7 @@ export function Venues() {
         <Hero
           title="Explore Wellness Venues"
           subtitle="Discover serene and inspiring spaces perfect for wellness activities, retreats, and transformative experiences."
-          image="https://afvltpqnhmaxanirwnqz.supabase.co/storage/v1/object/public/blog-images/59bed50f-5ccf-4265-87fa-7743af34d361/Wellness%20venue%20finder.png"
+          image="https://afvltpqnhmaxanirwnqz.supabase.co/storage/v1/object/public/listing-images/123c446f-e80c-409d-a3d3-e6fdc14949d4/wellness-nature-venue.png"
           showAddListing
           onAddListing={() => setShowCreateModal(true)}
         />

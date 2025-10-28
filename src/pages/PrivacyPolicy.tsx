@@ -144,6 +144,45 @@ export function PrivacyPolicy() {
               </ul>
             </section>
 
+            {/* Children's Privacy */}
+            <section>
+              <h2 className="text-xl font-semibold text-content mb-4">Children's Privacy Protection</h2>
+              <div className="space-y-4 text-content/80">
+                <p>
+                  Our Service is not intended for children under 13 years of age. We do not knowingly collect personal information from children under 13. If you are a parent or guardian and believe your child has provided us with personal information, please contact us immediately.
+                </p>
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                  <div className="flex items-center mb-2">
+                    <AlertCircle className="h-5 w-5 text-blue-500 mr-2" />
+                    <span className="font-medium text-blue-800">COPPA Compliance</span>
+                  </div>
+                  <p className="text-blue-800">
+                    We comply with the Children's Online Privacy Protection Act (COPPA) and do not knowingly collect personal information from children under 13 without verifiable parental consent.
+                  </p>
+                </div>
+                <p>
+                  Users between 13-17 years old may use our Service with parental consent and supervision. Parents can contact us to review, modify, or delete their child's personal information.
+                </p>
+              </div>
+            </section>
+
+            {/* Data Breach Notification */}
+            <section>
+              <h2 className="text-xl font-semibold text-content mb-4">Data Breach Notification</h2>
+              <div className="space-y-4 text-content/80">
+                <p>
+                  In the event of a data breach that may result in a high risk to your rights and freedoms, we will notify you and the relevant supervisory authority within 72 hours of becoming aware of the breach, as required by GDPR.
+                </p>
+                <h3 className="font-medium text-content">Notification Process</h3>
+                <ul className="list-disc pl-6 space-y-2">
+                  <li>We will notify affected users via email within 72 hours</li>
+                  <li>We will provide clear information about the nature of the breach</li>
+                  <li>We will explain the likely consequences and measures taken</li>
+                  <li>We will provide contact information for further inquiries</li>
+                </ul>
+              </div>
+            </section>
+
             {/* International Transfers */}
             <section>
               <h2 className="text-xl font-semibold text-content mb-4">International Data Transfers</h2>
@@ -156,15 +195,27 @@ export function PrivacyPolicy() {
             <section>
               <h2 className="text-xl font-semibold text-content mb-4 flex items-center">
                 <Mail className="h-5 w-5 mr-2 text-accent-text" />
-                Contact Us
+                Contact Us & Data Protection Officer
               </h2>
-              <p className="text-content/80">
+              <p className="text-content/80 mb-4">
                 For any questions about this Privacy Policy or to exercise your rights, please contact our Data Protection Officer at:
               </p>
               <div className="mt-4 bg-accent-base/10 rounded-lg p-4">
                 <p className="text-content/80">
-                  Email: support@mindful.family<br />
-                  Address: [Your Business Address]
+                  <strong>Data Protection Officer:</strong><br />
+                  Email: privacy@mindful.family<br />
+                  General Support: support@mindful.family<br />
+                  Address: [Your Business Address]<br />
+                  Response Time: We will respond to all inquiries within 30 days
+                </p>
+              </div>
+              <div className="mt-4 bg-green-50 border border-green-200 rounded-lg p-4">
+                <div className="flex items-center mb-2">
+                  <Shield className="h-5 w-5 text-green-500 mr-2" />
+                  <span className="font-medium text-green-800">Supervisory Authority</span>
+                </div>
+                <p className="text-green-800">
+                  You have the right to lodge a complaint with your local data protection supervisory authority if you believe we have not handled your personal data in accordance with applicable data protection laws.
                 </p>
               </div>
             </section>

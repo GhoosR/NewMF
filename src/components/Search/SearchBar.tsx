@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Search as SearchIcon, Loader2, User, Calendar, MapPin, Building2, BookOpen, UtensilsCrossed } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useDebounce } from '../../hooks/useDebounce';
 import { searchAll } from '../../lib/search';
 import { Avatar } from '../Profile/Avatar';
@@ -18,6 +18,10 @@ export function SearchBar({ onResultClick }: SearchBarProps) {
   const debouncedQuery = useDebounce(query, 300);
   const wrapperRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+
+  // Get current country from URL parameters
+  const currentCountry = searchParams.get('country');
 
   useEffect(() => {
     const fetchResults = async () => {
@@ -28,7 +32,7 @@ export function SearchBar({ onResultClick }: SearchBarProps) {
 
       setLoading(true);
       try {
-        const data = await searchAll(debouncedQuery);
+        const data = await searchAll(debouncedQuery, currentCountry || undefined);
         setResults(data);
       } catch (error) {
         console.error('Search error:', error);
@@ -68,7 +72,7 @@ export function SearchBar({ onResultClick }: SearchBarProps) {
       case 'practitioner': path = `/practitioners/${result.slug}`; break;
       case 'event': path = `/events/${result.slug}`; break;
       case 'venue': path = `/venues/${result.slug}`; break;
-      case 'course': path = `/courses/${result.id}`; break;
+      case 'course': path = `/courses/${result.slug}`; break;
       case 'recipe': path = `/recipes/${result.slug}`; break;
       case 'user': path = `/profile/${result.username}/listings`; break;
     }
@@ -131,6 +135,11 @@ export function SearchBar({ onResultClick }: SearchBarProps) {
                     {result.description && (
                       <p className="mt-1 text-sm text-content/60 line-clamp-2">
                         {result.description}
+                      </p>
+                    )}
+                    {result.country && (
+                      <p className="mt-1 text-xs text-content/50">
+                        📍 {result.country}
                       </p>
                     )}
                   </div>

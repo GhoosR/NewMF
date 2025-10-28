@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { List, Clock, Bookmark, Image, UtensilsCrossed, BookOpen, CreditCard, Award } from 'lucide-react';
+import { List, Clock, Bookmark, Image, UtensilsCrossed, BookOpen, CreditCard, Award, Calendar } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { useAdmin } from '../../lib/hooks/useAdmin';
 
@@ -30,6 +30,7 @@ export function ProfileTabs({ userId, username, isOwnProfile = false }: ProfileT
     { name: 'Recipes', path: 'recipes', icon: UtensilsCrossed },
     ...(isAdmin ? [{ name: 'Courses', path: 'courses', icon: BookOpen }] : []),
     ...(isOwnProfile ? [{ name: 'Badges', path: 'badges', icon: Award }] : []),
+    ...(showPaymentSettings ? [{ name: 'Bookings', path: 'bookings', icon: Calendar }] : []),
     ...(showPaymentSettings ? [{ name: 'Payment Settings', path: 'payment-settings', icon: CreditCard }] : [])
   ];
 

@@ -1,9 +1,11 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { JobCard } from '../components/Jobs/JobCard';
 import { JobFilters } from '../components/Jobs/Filters/JobFilters';
 import { JobForm } from '../components/Listings/Forms/JobForm';
 import { Hero } from '../components/Hero';
 import { supabase } from '../lib/supabase';
+import { europeanCountries } from '../lib/constants/countries';
 import type { Job } from '../types/jobs';
 
 interface Filters {
@@ -12,6 +14,7 @@ interface Filters {
 }
 
 export function Jobs() {
+  const [searchParams] = useSearchParams();
   const [jobs, setJobs] = useState<Job[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -20,10 +23,29 @@ export function Jobs() {
     jobTypes: [],
     countries: []
   });
+  const userHasInteracted = useRef(false);
+
+  // Initialize filters from URL parameters
+  useEffect(() => {
+    const countryParam = searchParams.get('country');
+    
+    if (countryParam) {
+      setFilters(prev => ({
+        ...prev,
+        countries: [countryParam]
+      }));
+    }
+  }, [searchParams]);
 
   useEffect(() => {
     async function fetchJobs() {
       try {
+        // Only use URL parameter if user hasn't interacted with filters yet
+        const countryParam = searchParams.get('country');
+        const effectiveFilters = (countryParam && !userHasInteracted.current)
+          ? { ...filters, countries: [countryParam] }
+          : filters;
+          
         let query = supabase
           .from('job_offers')
           .select(`
@@ -37,16 +59,23 @@ export function Jobs() {
           `)
           .eq('approval_status', 'approved');
 
-        if (filters.jobTypes.length > 0) {
-          query = query.in('job_type', filters.jobTypes);
+        if (effectiveFilters.jobTypes.length > 0) {
+          query = query.in('job_type', effectiveFilters.jobTypes);
         }
 
-        if (filters.countries.length > 0) {
-          query = query.in('country', filters.countries);
+        if (effectiveFilters.countries.length > 0) {
+          const expandedCountries = Array.from(new Set(
+            effectiveFilters.countries.flatMap((c) => {
+              const match = europeanCountries.find(ec => ec.value === c || ec.label === c);
+              return match ? [match.value, match.label] : [c];
+            })
+          ));
+          query = query.in('country', expandedCountries);
         }
 
         const { data, error } = await query;
         if (error) throw error;
+        
         setJobs(data || []);
       } catch (err: any) {
         setError(err.message);
@@ -56,9 +85,12 @@ export function Jobs() {
     }
 
     fetchJobs();
-  }, [filters]);
+  }, [filters, searchParams]);
 
   const handleFilterChange = (filterType: keyof Filters, values: string[]) => {
+    // Mark that user has interacted with filters
+    userHasInteracted.current = true;
+    
     setFilters(prev => ({
       ...prev,
       [filterType]: values
@@ -70,9 +102,9 @@ export function Jobs() {
       {/* Mobile Full-Width Header */}
       <div className="lg:hidden relative h-64 overflow-hidden">
         <img
-          src="https://afvltpqnhmaxanirwnqz.supabase.co/storage/v1/object/public/listing-images/123c446f-e80c-409d-a3d3-e6fdc14949d4/wellness-cooking-job.png"
+          src="https://afvltpqnhmaxanirwnqz.supabase.co/storage/v1/object/public/listing-images/123c446f-e80c-409d-a3d3-e6fdc14949d4/Medition-teacher-and-yoga.png"
           alt="Wellness Career Opportunities"
-          className="w-full h-full object-cover shadow-none"
+          className="w-full h-full object-cover object-top shadow-none"
         />
         <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-gray-50"></div>
         <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-gray-50"></div>
@@ -99,7 +131,7 @@ export function Jobs() {
         <Hero
           title="Wellness Career Opportunities"
           subtitle="Find meaningful career opportunities in the wellness industry. Connect with organisations that share your values and vision."
-          image="https://afvltpqnhmaxanirwnqz.supabase.co/storage/v1/object/public/listing-images/123c446f-e80c-409d-a3d3-e6fdc14949d4/wellness-cooking-job.png"
+          image="https://afvltpqnhmaxanirwnqz.supabase.co/storage/v1/object/public/listing-images/123c446f-e80c-409d-a3d3-e6fdc14949d4/Medition-teacher-and-yoga.png"
           showAddListing
           onAddListing={() => setShowCreateModal(true)}
         />

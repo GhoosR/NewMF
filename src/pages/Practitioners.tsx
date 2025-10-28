@@ -1,10 +1,12 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { PractitionerCard } from '../components/Listings/PractitionerCard';
 import { HorizontalFilters } from '../components/Practitioners/Filters/HorizontalFilters';
 import { PractitionerForm } from '../components/Listings/Forms/PractitionerForm';
 import { Hero } from '../components/Hero';
 import { Meta } from '../components/Meta';
 import { supabase } from '../lib/supabase';
+import { europeanCountries } from '../lib/constants/countries';
 import type { Practitioner } from '../types/practitioners';
 
 interface Filters {
@@ -15,6 +17,7 @@ interface Filters {
 }
 
 export function Practitioners() {
+  const [searchParams] = useSearchParams();
   const [practitioners, setPractitioners] = useState<Practitioner[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -25,10 +28,29 @@ export function Practitioners() {
     languages: [],
     workArrangements: [],
   });
+  const userHasInteracted = useRef(false);
+
+  // Initialize filters from URL parameters
+  useEffect(() => {
+    const countryParam = searchParams.get('country');
+    
+    if (countryParam) {
+      setFilters(prev => ({
+        ...prev,
+        countries: [countryParam]
+      }));
+    }
+  }, [searchParams]);
 
   useEffect(() => {
     async function fetchPractitioners() {
       try {
+        // Only use URL parameter if user hasn't interacted with filters yet
+        const countryParam = searchParams.get('country');
+        const effectiveFilters = (countryParam && !userHasInteracted.current)
+          ? { ...filters, countries: [countryParam] }
+          : filters;
+          
         let query = supabase
           .from('practitioners')
           .select(`
@@ -43,31 +65,37 @@ export function Practitioners() {
           `)
           .eq('approval_status', 'approved');
 
-        if (filters.categories.length > 0) {
-          query = query.in('category', filters.categories);
+        if (effectiveFilters.categories.length > 0) {
+          query = query.in('category', effectiveFilters.categories);
         }
-        if (filters.countries.length > 0) {
-          query = query.in('country', filters.countries);
+        if (effectiveFilters.countries.length > 0) {
+          const expandedCountries = Array.from(new Set(
+            effectiveFilters.countries.flatMap((c) => {
+              const match = europeanCountries.find(ec => ec.value === c || ec.label === c);
+              return match ? [match.value, match.label] : [c];
+            })
+          ));
+          query = query.in('country', expandedCountries);
         }
-        if (filters.languages.length > 0) {
+        if (effectiveFilters.languages.length > 0) {
           // Convert comma-separated language string to array and check overlap
-          query = query.filter('language', 'ilike', `%${filters.languages[0]}%`);
+          query = query.filter('language', 'ilike', `%${effectiveFilters.languages[0]}%`);
           // Add additional language filters if more than one selected
-          filters.languages.slice(1).forEach(lang => {
+          effectiveFilters.languages.slice(1).forEach(lang => {
             query = query.or(`language.ilike.%${lang}%`);
           });
         }
-        if (filters.workArrangements.length > 0) {
+        if (effectiveFilters.workArrangements.length > 0) {
           // Enhanced logic: if someone selects "In_Person" or "Online", also show "Hybrid" practitioners
-          const workArrangementFilters = [...filters.workArrangements];
+          const workArrangementFilters = [...effectiveFilters.workArrangements];
           
           // If "In_Person" is selected, also include "Hybrid"
-          if (filters.workArrangements.includes('In_Person') && !filters.workArrangements.includes('Hybrid')) {
+          if (effectiveFilters.workArrangements.includes('In_Person') && !effectiveFilters.workArrangements.includes('Hybrid')) {
             workArrangementFilters.push('Hybrid');
           }
           
           // If "Online" is selected, also include "Hybrid"
-          if (filters.workArrangements.includes('Online') && !filters.workArrangements.includes('Hybrid')) {
+          if (effectiveFilters.workArrangements.includes('Online') && !effectiveFilters.workArrangements.includes('Hybrid')) {
             workArrangementFilters.push('Hybrid');
           }
           
@@ -76,6 +104,7 @@ export function Practitioners() {
 
         const { data, error } = await query;
         if (error) throw error;
+        
         setPractitioners(data || []);
       } catch (err: any) {
         setError(err.message);
@@ -85,9 +114,12 @@ export function Practitioners() {
     }
 
     fetchPractitioners();
-  }, [filters]);
+  }, [filters, searchParams]);
 
   const handleFilterChange = (filterType: keyof Filters, values: string[]) => {
+    // Mark that user has interacted with filters
+    userHasInteracted.current = true;
+    
     setFilters(prev => ({
       ...prev,
       [filterType]: values
@@ -104,9 +136,9 @@ export function Practitioners() {
       {/* Mobile Full-Width Header */}
       <div className="lg:hidden relative h-64 overflow-hidden">
         <img
-          src="https://afvltpqnhmaxanirwnqz.supabase.co/storage/v1/object/public/listing-images/123c446f-e80c-409d-a3d3-e6fdc14949d4/yoga-practitioner.webp"
+          src="https://afvltpqnhmaxanirwnqz.supabase.co/storage/v1/object/public/listing-images/123c446f-e80c-409d-a3d3-e6fdc14949d4/wellness-practitioner-soundbath.png"
           alt="Find Wellness Practitioners"
-          className="w-full h-full object-cover shadow-none"
+          className="w-full h-full object-cover object-center shadow-none"
         />
         <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-gray-50"></div>
       </div>
@@ -132,7 +164,7 @@ export function Practitioners() {
         <Hero
           title="Find Wellness Practitioners"
           subtitle="Connect with experienced wellness practitioners who can guide you on your journey to holistic health and well-being."
-          image="https://afvltpqnhmaxanirwnqz.supabase.co/storage/v1/object/public/listing-images/123c446f-e80c-409d-a3d3-e6fdc14949d4/yoga-practitioner.webp"
+          image="https://afvltpqnhmaxanirwnqz.supabase.co/storage/v1/object/public/listing-images/123c446f-e80c-409d-a3d3-e6fdc14949d4/wellness-practitioner-soundbath.png"
           showAddListing
           onAddListing={() => setShowCreateModal(true)}
         />

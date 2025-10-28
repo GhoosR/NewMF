@@ -4,7 +4,7 @@ import { Plus, Minus, PackagePlus } from 'lucide-react';
 interface Package {
   name: string;
   description: string;
-  price: number;
+  price: number | string;
   features: string[];
 }
 
@@ -22,6 +22,27 @@ export function PackageInput({ packages, onChange, currency }: PackageInputProps
       [field]: value
     };
     onChange(newPackages);
+  };
+
+  const handlePriceChange = (index: number, value: string) => {
+    // If the field is empty, set it to empty string
+    if (value === '') {
+      handlePackageChange(index, 'price', '');
+      return;
+    }
+    
+    // If user is typing and the current value is 0, replace it
+    const currentPrice = packages[index].price;
+    if (currentPrice === 0 && value !== '') {
+      handlePackageChange(index, 'price', value);
+      return;
+    }
+    
+    // Parse the number
+    const numValue = parseFloat(value);
+    if (!isNaN(numValue)) {
+      handlePackageChange(index, 'price', numValue);
+    }
   };
 
   const handleFeatureChange = (packageIndex: number, featureIndex: number, value: string) => {
@@ -132,11 +153,18 @@ export function PackageInput({ packages, onChange, currency }: PackageInputProps
               </label>
               <input
                 type="number"
-                value={pkg.price}
-                onChange={(e) => handlePackageChange(packageIndex, 'price', parseFloat(e.target.value) || 0)}
+                value={pkg.price === 0 ? '' : pkg.price}
+                onChange={(e) => handlePriceChange(packageIndex, e.target.value)}
+                onFocus={(e) => {
+                  // If the value is 0, select all text so user can type to replace it
+                  if (pkg.price === 0) {
+                    e.target.select();
+                  }
+                }}
                 className="w-full px-4 py-2 border border-accent-text/20 rounded-lg focus:border-accent-text focus:ring-1 focus:ring-accent-text/20"
                 min="0"
                 step="0.01"
+                placeholder="Enter price"
               />
             </div>
 

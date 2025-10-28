@@ -8,9 +8,10 @@ import type { Venue } from '../../types/venues';
 
 interface VenueCardProps {
   venue: Venue;
+  showStatus?: boolean;
 }
 
-export function VenueCard({ venue }: VenueCardProps) {
+export function VenueCard({ venue, showStatus = false }: VenueCardProps) {
   return (
     <div className="bg-background rounded-lg shadow-sm overflow-hidden hover:shadow-md transition-shadow">
       <Link to={`/venues/${venue.slug}`}>
@@ -45,9 +46,16 @@ export function VenueCard({ venue }: VenueCardProps) {
               />
             </Link>
           )}
-          <span className="px-2 py-1 text-xs font-medium bg-accent-base text-accent-text rounded-full">
-            {venue.venue_type ? formatCategoryName(venue.venue_type) : `${venue.capacity} people`}
-          </span>
+          <div className="flex items-center space-x-2">
+            <span className="px-2 py-1 text-xs font-medium bg-accent-base text-accent-text rounded-full">
+              {venue.venue_type ? formatCategoryName(venue.venue_type) : `${venue.capacity} people`}
+            </span>
+            {showStatus && venue.approval_status === 'pending' && (
+              <span className="px-2 py-1 text-xs font-medium bg-yellow-100 text-yellow-800 rounded-full">
+                Pending
+              </span>
+            )}
+          </div>
         </div>
 
         <Link to={`/venues/${venue.slug}`}>

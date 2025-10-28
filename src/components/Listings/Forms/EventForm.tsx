@@ -51,7 +51,7 @@ export function EventForm({ onClose, onSuccess, editId }: EventFormProps) {
   });
   const [currency, setCurrency] = useState('EUR');
   const [images, setImages] = useState<File[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(!!editId);
   const [error, setError] = useState('');
   const [enableTicketSales, setEnableTicketSales] = useState(false);
   const [communities, setCommunities] = useState<Community[]>([]);
@@ -425,10 +425,9 @@ export function EventForm({ onClose, onSuccess, editId }: EventFormProps) {
               label="Event Images"
               onChange={setImages}
               maxFiles={5}
-              maxSize={2}
               accept="image/*"
               multiple
-              description="Upload images for your event (max 5 images)"
+              description="Upload images for your event (max 5 images, will be automatically compressed)"
             />
             <div className="flex flex-wrap gap-4">
               {images.map((file, index) => (
@@ -563,6 +562,19 @@ export function EventForm({ onClose, onSuccess, editId }: EventFormProps) {
         return null;
     }
   };
+
+  if (loading) {
+    return (
+      <Modal title={editId ? "Edit Event" : "Add Event"} onClose={onClose}>
+        <div className="max-w-2xl mx-auto">
+          <div className="flex items-center justify-center py-8">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-accent-text"></div>
+            <span className="ml-3 text-content">Loading event data...</span>
+          </div>
+        </div>
+      </Modal>
+    );
+  }
 
   return (
     <Modal title={editId ? "Edit Event" : "Add Event"} onClose={onClose}>

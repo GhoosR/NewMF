@@ -214,7 +214,10 @@ export function Notifications() {
           }
           break;
         case 'course_approved':
-          if (notification.data.listing_id) {
+          if (notification.data.listing_slug) {
+            window.location.href = `/courses/${notification.data.listing_slug}`;
+          } else if (notification.data.listing_id) {
+            // Fallback to ID if slug not available
             window.location.href = `/courses/${notification.data.listing_id}`;
           }
           break;
@@ -243,6 +246,10 @@ export function Notifications() {
         case 'join_request_approved':
         case 'join_request_rejected':
           window.location.href = `/communities/${notification.data.community_id}`;
+          break;
+        case 'new_listing':
+          // Navigate to admin dashboard for new listing notifications
+          window.location.href = '/admin';
           break;
         case 'mention':
           if (notification.data.post_type === 'timeline') {

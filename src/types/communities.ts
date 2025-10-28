@@ -57,6 +57,7 @@ export interface CommunityPost {
   _count?: {
     comments: number;
   };
+  community_post_comments?: Array<{ count: number }>;
 }
 
 export type CommunityPost as CommunityPostType = CommunityPost;

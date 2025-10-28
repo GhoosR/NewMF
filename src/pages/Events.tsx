@@ -1,10 +1,12 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { EventCard } from '../components/Events/EventCard';
 import { EventFilters } from '../components/Events/Filters/EventFilters';
 import { EventForm } from '../components/Listings/Forms/EventForm';
 import { Hero } from '../components/Hero';
 import { Meta } from '../components/Meta';
 import { supabase } from '../lib/supabase';
+import { europeanCountries } from '../lib/constants/countries';
 import type { Event } from '../types/events';
 
 interface Filters {
@@ -13,6 +15,7 @@ interface Filters {
 }
 
 export function Events() {
+  const [searchParams] = useSearchParams();
   const [events, setEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -21,10 +24,29 @@ export function Events() {
     eventTypes: [],
     countries: []
   });
+  const userHasInteracted = useRef(false);
+
+  // Initialize filters from URL parameters
+  useEffect(() => {
+    const countryParam = searchParams.get('country');
+    
+    if (countryParam) {
+      setFilters(prev => ({
+        ...prev,
+        countries: [countryParam]
+      }));
+    }
+  }, [searchParams]);
 
   useEffect(() => {
     async function fetchEvents() {
       try {
+        // Only use URL parameter if user hasn't interacted with filters yet
+        const countryParam = searchParams.get('country');
+        const effectiveFilters = (countryParam && !userHasInteracted.current)
+          ? { ...filters, countries: [countryParam] }
+          : filters;
+          
         let query = supabase
           .from('events')
           .select(`
@@ -44,16 +66,23 @@ export function Events() {
           .eq('approval_status', 'approved')
           .or('visibility.eq.public,visibility.is.null');
 
-        if (filters.eventTypes.length > 0) {
-          query = query.in('event_type', filters.eventTypes);
+        if (effectiveFilters.eventTypes.length > 0) {
+          query = query.in('event_type', effectiveFilters.eventTypes);
         }
 
-        if (filters.countries.length > 0) {
-          query = query.in('country', filters.countries);
+        if (effectiveFilters.countries.length > 0) {
+          const expandedCountries = Array.from(new Set(
+            effectiveFilters.countries.flatMap((c) => {
+              const match = europeanCountries.find(ec => ec.value === c || ec.label === c);
+              return match ? [match.value, match.label] : [c];
+            })
+          ));
+          query = query.in('country', expandedCountries);
         }
 
         const { data, error } = await query;
         if (error) throw error;
+        
         setEvents(data || []);
       } catch (err: any) {
         setError(err.message);
@@ -63,9 +92,12 @@ export function Events() {
     }
 
     fetchEvents();
-  }, [filters]);
+  }, [filters, searchParams]);
 
   const handleFilterChange = (filterType: keyof Filters, values: string[]) => {
+    // Mark that user has interacted with filters
+    userHasInteracted.current = true;
+    
     setFilters(prev => ({
       ...prev,
       [filterType]: values
@@ -82,7 +114,7 @@ export function Events() {
       {/* Mobile Full-Width Header */}
       <div className="lg:hidden relative h-64 overflow-hidden">
         <img
-          src="https://afvltpqnhmaxanirwnqz.supabase.co/storage/v1/object/public/listing-images/123c446f-e80c-409d-a3d3-e6fdc14949d4/tree.webp"
+          src="https://afvltpqnhmaxanirwnqz.supabase.co/storage/v1/object/public/post-images/59bed50f-5ccf-4265-87fa-7743af34d361/wellness-event-lady-circle.png"
           alt="Discover Wellness Events"
           className="w-full h-full object-cover shadow-none"
         />
@@ -111,7 +143,7 @@ export function Events() {
         <Hero
           title="Discover Wellness Events"
           subtitle="Find and join transformative wellness events, workshops, and retreats that nourish your mind, body, and soul."
-          image="https://afvltpqnhmaxanirwnqz.supabase.co/storage/v1/object/public/listing-images/123c446f-e80c-409d-a3d3-e6fdc14949d4/tree.webp"
+          image="https://afvltpqnhmaxanirwnqz.supabase.co/storage/v1/object/public/post-images/59bed50f-5ccf-4265-87fa-7743af34d361/wellness-event-lady-circle.png"
           showAddListing
           onAddListing={() => setShowCreateModal(true)}
         />

@@ -56,14 +56,32 @@ export function FileInput({
                        file.type === 'image/heif';
         
         if (file.type.startsWith('image/') || isHEIC) {
+          // Determine compression settings based on file size
+          const fileSizeMB = file.size / 1024 / 1024;
+          let quality = 0.7;
+          let maxWidth = 1080;
+          let maxHeight = 1080;
+          
+          // More aggressive compression for larger files
+          if (fileSizeMB > 10) {
+            quality = 0.5;
+            maxWidth = 800;
+            maxHeight = 800;
+          } else if (fileSizeMB > 5) {
+            quality = 0.6;
+            maxWidth = 900;
+            maxHeight = 900;
+          }
+          
           return compressImage(file, {
-            quality: 0.8,
-            maxWidth: 1920,
-            maxHeight: 1080,
-            convertSize: 5000000, // Convert to JPG if > 5MB
+            quality: quality,
+            maxWidth: maxWidth,
+            maxHeight: maxHeight,
+            convertSize: 2000000, // Convert to JPG if > 2MB
             success: (result) => {
               console.log('Original size:', file.size / 1024 / 1024, 'MB');
               console.log('Compressed size:', result.size / 1024 / 1024, 'MB');
+              console.log('Compression ratio:', ((1 - result.size / file.size) * 100).toFixed(1) + '%');
               return result;
             },
             error: (err) => {

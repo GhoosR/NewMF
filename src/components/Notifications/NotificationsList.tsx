@@ -93,7 +93,10 @@ export function NotificationsList({
           }
           break;
         case 'course_approved':
-          if (notification.data.listing_id) {
+          if (notification.data.listing_slug) {
+            navigate(`/courses/${notification.data.listing_slug}`);
+          } else if (notification.data.listing_id) {
+            // Fallback to ID if slug not available
             navigate(`/courses/${notification.data.listing_id}`);
           }
           break;
@@ -123,6 +126,29 @@ export function NotificationsList({
         case 'join_request_rejected':
           navigate(`/communities/${notification.data.community_id}`);
           break;
+        case 'new_listing':
+          // Navigate to admin dashboard for new listing notifications
+          navigate('/admin');
+          break;
+        case 'new_booking': {
+          const bookingId = notification.data?.booking_id;
+          const practitionerId = notification.data?.practitioner_id || notification.data?.practitionerId;
+          if (practitionerId) {
+            navigate(`/bookings/${practitionerId}`);
+          } else if (bookingId) {
+            navigate(`/bookings`);
+          }
+          break;
+        }
+        case 'booking_status_update': {
+          const practitionerId = notification.data?.practitioner_id || notification.data?.practitionerId;
+          if (practitionerId) {
+            navigate(`/bookings/${practitionerId}`);
+          } else {
+            navigate('/bookings');
+          }
+          break;
+        }
         case 'mention':
           if (notification.data.post_type === 'timeline') {
             window.location.href = `/posts/${notification.data.post_id}`;

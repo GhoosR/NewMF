@@ -22,7 +22,7 @@ export function CourseCard({ course, showStatus = false }: CourseCardProps) {
 
   return (
     <div className="bg-background rounded-lg shadow-sm overflow-hidden hover:shadow-md transition-shadow">
-      <Link to={`/courses/${course.id}`}>
+      <Link to={`/courses/${course.slug}`}>
         <div className="aspect-w-16 aspect-h-9">
           <img
             src={course.thumbnail_url || 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&q=80&w=400'}
@@ -59,7 +59,7 @@ export function CourseCard({ course, showStatus = false }: CourseCardProps) {
           )}
         </div>
 
-        <Link to={`/courses/${course.id}`}>
+        <Link to={`/courses/${course.slug}`}>
           <h3 className="text-lg font-semibold text-content mb-2 hover:text-accent-text">
             {course.title}
           </h3>

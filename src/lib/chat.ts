@@ -151,6 +151,13 @@ export async function getConversationMessages(conversationId: string, beforeTime
     return messages.map(message => ({
       id: message.id,
       content: message.content,
+      messageType: message.message_type || 'text',
+      audioUrl: message.audio_url,
+      audioDuration: message.audio_duration,
+      fileUrl: message.file_url,
+      fileName: message.file_name,
+      fileSize: message.file_size,
+      fileType: message.file_type,
       sender: {
         id: message.sender.id,
         username: message.sender.username,
@@ -223,7 +230,8 @@ export async function sendMessage(conversationId: string, content: string) {
       .insert({
         conversation_id: conversationId,
         sender_id: user.id,
-        content
+        content,
+        message_type: 'text'
       })
       .select(`
         *,
@@ -253,6 +261,112 @@ export async function sendMessage(conversationId: string, content: string) {
     return message;
   } catch (error) {
     console.error('Error sending message:', error);
+    throw error;
+  }
+}
+
+export async function sendVoiceMessage(conversationId: string, audioBlob: Blob, duration: number) {
+  try {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error('Not authenticated');
+
+    // Upload audio file to Supabase Storage
+    const fileName = `voice-messages/${user.id}/${Date.now()}-${crypto.randomUUID()}.webm`;
+    const { data: uploadData, error: uploadError } = await supabase.storage
+      .from('chat-files')
+      .upload(fileName, audioBlob, {
+        contentType: 'audio/webm',
+        cacheControl: '3600',
+        upsert: false
+      });
+
+    if (uploadError) throw uploadError;
+
+    // Get public URL for the uploaded file
+    const { data: { publicUrl } } = supabase.storage
+      .from('chat-files')
+      .getPublicUrl(fileName);
+
+    // Get conversation type first
+    const { data: conversation, error: convError } = await supabase
+      .from('conversations')
+      .select('type, participant_ids')
+      .eq('id', conversationId)
+      .single();
+
+    if (convError) throw convError;
+
+    // If it's a group chat, check if we should prevent direct chat creation
+    if (conversation.type === 'group') {
+      for (const participantId of conversation.participant_ids) {
+        if (participantId === user.id) continue;
+
+        try {
+          const { data: shouldCreate, error: checkError } = await supabase
+            .rpc('should_create_direct_chat', {
+              user_id_1: user.id,
+              user_id_2: participantId
+            });
+
+          if (checkError) {
+            console.error('Error checking direct chat status:', checkError);
+            // If the function doesn't exist (404 error), skip the check
+            if (checkError.code === 'PGRST204' || checkError.message?.includes('404')) {
+              console.warn('should_create_direct_chat function not found, skipping check');
+              continue;
+            }
+            continue;
+          }
+
+          if (shouldCreate) {
+            throw new Error('Direct chat creation between group members is not allowed');
+          }
+        } catch (error) {
+          console.error('Error in direct chat check:', error);
+          // Continue with message sending if the check fails
+          continue;
+        }
+      }
+    }
+
+    const { data: message, error } = await supabase
+      .from('messages')
+      .insert({
+        conversation_id: conversationId,
+        sender_id: user.id,
+        content: '🎤 Voice message',
+        message_type: 'voice',
+        audio_url: publicUrl,
+        audio_duration: Math.round(duration)
+      })
+      .select(`
+        *,
+        sender:users (
+          id,
+          username,
+          avatar_url
+        )
+      `)
+      .single();
+
+    if (error) throw error;
+
+    // Update conversation's last message and last viewed
+    const { error: updateError } = await supabase
+      .from('conversations')
+      .update({
+        last_message: '🎤 Voice message',
+        last_message_at: new Date().toISOString(),
+        last_viewed_by: user.id,
+        last_viewed_at: new Date().toISOString()
+      })
+      .eq('id', conversationId);
+
+    if (updateError) throw updateError;
+
+    return message;
+  } catch (error) {
+    console.error('Error sending voice message:', error);
     throw error;
   }
 }
@@ -288,6 +402,13 @@ export async function subscribeToConversation(conversationId: string, onMessage:
           onMessage({
             id: message.id,
             content: message.content,
+            messageType: message.message_type || 'text',
+            audioUrl: message.audio_url,
+            audioDuration: message.audio_duration,
+            fileUrl: message.file_url,
+            fileName: message.file_name,
+            fileSize: message.file_size,
+            fileType: message.file_type,
             sender: {
               id: message.sender.id,
               username: message.sender.username,

@@ -178,7 +178,7 @@ const fetchFields = async () => {
           Design & Manage Your Garden Layout
         </h1>
         <p className="text-lg text-content/70 mb-6 max-w-md mx-auto">
-          Track planting schedules, work together with your garden team, and explore layout designs.
+        Track planting schedules, work on a solo project or together with your garden team, and explore layout designs.
         </p>
         <Link
           to="/practitioners?categories=Permaculture_Designer"
@@ -198,7 +198,7 @@ const fetchFields = async () => {
                   Design & Manage Your Garden Layout
                 </h1>
                 <p className="text-lg lg:text-xl text-gray-600 mb-6">
-                  Track planting schedules, work together with your garden team, and explore layout designs. 
+                Track planting schedules, work on a solo project or together with your garden team, and explore layout designs. 
                 </p>
                 <div className="mb-6">
                   <Link

@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { Calendar } from 'lucide-react';
 import { AddListingButton } from '../../components/Listings/AddListingButton';
 import { PractitionerCard } from '../../components/Listings/PractitionerCard';
 import { EventCard } from '../../components/Events/EventCard';
@@ -61,6 +62,9 @@ export function ListingsTab({ userId }: ListingsTabProps) {
           // Only show approved listings to non-owners
           if (!isOwner) {
             query = query.eq('approval_status', 'approved');
+          } else {
+            // For owners, exclude rejected listings
+            query = query.neq('approval_status', 'rejected');
           }
 
           const { data: practitionersData, error: practitionersError } = await query;
@@ -91,6 +95,9 @@ export function ListingsTab({ userId }: ListingsTabProps) {
           // Only show approved listings to non-owners
           if (!isOwner) {
             query = query.eq('approval_status', 'approved');
+          } else {
+            // For owners, exclude rejected listings
+            query = query.neq('approval_status', 'rejected');
           }
 
           const { data: eventsData, error: eventsError } = await query;
@@ -116,6 +123,9 @@ export function ListingsTab({ userId }: ListingsTabProps) {
           // Only show approved listings to non-owners
           if (!isOwner) {
             query = query.eq('approval_status', 'approved');
+          } else {
+            // For owners, exclude rejected listings
+            query = query.neq('approval_status', 'rejected');
           }
 
           const { data: venuesData, error: venuesError } = await query;
@@ -141,6 +151,9 @@ export function ListingsTab({ userId }: ListingsTabProps) {
           // Only show approved listings to non-owners
           if (!isOwner) {
             query = query.eq('approval_status', 'approved');
+          } else {
+            // For owners, exclude rejected listings
+            query = query.neq('approval_status', 'rejected');
           }
 
           const { data: jobsData, error: jobsError } = await query;
@@ -174,7 +187,19 @@ export function ListingsTab({ userId }: ListingsTabProps) {
           <h2 className="text-xl font-semibold text-content">
             {isOwnProfile ? 'Your Listings' : 'Listings'}
           </h2>
-          {isOwnProfile && <AddListingButton />}
+          <div className="flex items-center space-x-3">
+            {isOwnProfile && practitioners.length > 0 && (
+              <Link
+                to={`/bookings/${practitioners[0].id}`}
+                className="inline-flex items-center px-4 py-2 text-sm font-medium text-white rounded-md transition-colors"
+                style={{ backgroundColor: '#7A9A3A' }}
+              >
+                <Calendar className="h-4 w-4 mr-2" />
+                Manage Bookings
+              </Link>
+            )}
+            {isOwnProfile && <AddListingButton />}
+          </div>
         </div>
         
         <ListingTypeTabs activeType={activeType} onTypeChange={setActiveType} />
@@ -190,28 +215,28 @@ export function ListingsTab({ userId }: ListingsTabProps) {
             {(activeType === 'all' || activeType === 'practitioners') &&
               practitioners.map((practitioner) => (
                 <Link key={practitioner.id} to={`/practitioners/${practitioner.slug}`}>
-                  <PractitionerCard practitioner={practitioner} />
+                  <PractitionerCard practitioner={practitioner} showStatus={isOwnProfile} />
                 </Link>
               ))}
             
             {(activeType === 'all' || activeType === 'events') &&
               events.map((event) => (
                 <Link key={event.id} to={`/events/${event.slug}`}>
-                  <EventCard event={event} />
+                  <EventCard event={event} showStatus={isOwnProfile} />
                 </Link>
               ))}
 
             {(activeType === 'all' || activeType === 'venues') &&
               venues.map((venue) => (
                 <Link key={venue.id} to={`/venues/${venue.slug}`}>
-                  <VenueCard venue={venue} />
+                  <VenueCard venue={venue} showStatus={isOwnProfile} />
                 </Link>
               ))}
 
             {(activeType === 'all' || activeType === 'jobs') &&
               jobs.map((job) => (
                 <Link key={job.id} to={`/jobs/${job.slug}`}>
-                  <JobCard job={job} />
+                  <JobCard job={job} showStatus={isOwnProfile} />
                 </Link>
               ))}
           </div>

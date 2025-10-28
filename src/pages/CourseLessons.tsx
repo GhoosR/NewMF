@@ -22,7 +22,7 @@ interface Progress {
 }
 
 export function CourseLessons() {
-  const { id } = useParams<{ id: string }>();
+  const { slug } = useParams<{ slug: string }>();
   const [course, setCourse] = useState<Course | null>(null);
   const [lessons, setLessons] = useState<Lesson[]>([]);
   const [currentLesson, setCurrentLesson] = useState<Lesson | null>(null);
@@ -35,7 +35,7 @@ export function CourseLessons() {
 
   useEffect(() => {
     async function fetchCourse() {
-      if (!id) return;
+      if (!slug) return;
       
       try {
         const { data: { user } } = await supabase.auth.getUser();
@@ -43,11 +43,21 @@ export function CourseLessons() {
         
         setUserId(user.id);
 
+        // First get the course ID from the slug
+        const { data: courseInfo, error: courseInfoError } = await supabase
+          .from('courses')
+          .select('id')
+          .eq('slug', slug)
+          .single();
+
+        if (courseInfoError) throw courseInfoError;
+        if (!courseInfo) throw new Error('Course not found');
+
         // Check enrollment
         const { data: enrollments, error: enrollmentError } = await supabase
           .from('course_enrollments')
           .select('status')
-          .eq('course_id', id)
+          .eq('course_id', courseInfo.id)
           .eq('user_id', user.id);
 
         if (enrollmentError) throw enrollmentError;
@@ -80,7 +90,7 @@ export function CourseLessons() {
               avatar_url
             )
           `)
-          .eq('id', id)
+          .eq('slug', slug)
           .single();
 
         if (courseError) throw courseError;
@@ -117,7 +127,7 @@ export function CourseLessons() {
           const { data: progressData } = await supabase
             .from('course_progress')
             .select('lesson_id, completed_at, watched_duration, total_duration')
-            .eq('course_id', id)
+            .eq('course_id', courseData.id)
             .eq('user_id', user.id);
 
           setProgress(progressData || []);
@@ -148,7 +158,7 @@ export function CourseLessons() {
     }
 
     fetchCourse();
-  }, [id]);
+  }, [slug]);
 
   const markLessonComplete = async (lessonId: string) => {
     try {
@@ -267,14 +277,14 @@ export function CourseLessons() {
 
   // Only redirect if we've checked enrollment status
   if (enrollmentChecked && !isEnrolled) {
-    return <Navigate to={`/courses/${id}`} replace />;
+    return <Navigate to={`/courses/${slug}`} replace />;
   }
 
   if (error || !course) {
     return (
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <Link 
-          to={`/courses/${id}`}
+          to={`/courses/${slug}`}
           className="inline-flex items-center text-accent-text hover:text-accent-text/80 mb-6"
         >
           <ArrowLeft className="h-4 w-4 mr-2" />
@@ -300,7 +310,7 @@ export function CourseLessons() {
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <Link 
-          to={`/courses/${id}`}
+          to={`/courses/${slug}`}
           className="inline-flex items-center text-accent-text hover:text-accent-text/80 mb-6"
         >
           <ArrowLeft className="h-4 w-4 mr-2" />

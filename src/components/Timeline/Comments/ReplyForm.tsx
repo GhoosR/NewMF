@@ -88,29 +88,27 @@ export function ReplyForm({ postId, parentId, onSuccess, onCancel }: ReplyFormPr
   };
 
   return (
-    <form onSubmit={handleSubmit} className="flex items-end space-x-2">
-      <div className="flex-1 relative">
-        <UserMentionInput
-          value={content}
-          onChange={(e) => setContent(e.target.value)}
-          onMentionedUsersChange={setMentionedUsers}
-          placeholder="Write a reply..."
-          className="w-full bg-accent-base/20 rounded-lg px-3 py-1.5 pr-10 text-sm focus:outline-none focus:ring-0 border border-transparent hover:border-accent-text/10 transition-colors"
-          rows={1}
-        />
-      </div>
-      <div className="flex space-x-2">
+    <form onSubmit={handleSubmit} className="bg-gray-50 border border-gray-200 rounded-lg">
+      <UserMentionInput
+        value={content}
+        onChange={(e) => setContent(e.target.value)}
+        onMentionedUsersChange={setMentionedUsers}
+        placeholder="Write a reply..."
+        className="w-full bg-transparent border-0 rounded-lg px-3 py-3 text-sm focus:outline-none focus:ring-0 resize-none min-h-[44px]"
+        rows={1}
+      />
+      <div className="flex justify-end space-x-2 px-3 pb-3">
         <button
           type="button"
           onClick={onCancel}
-          className="px-3 py-1.5 text-xs text-content/60 hover:text-content transition-colors"
+          className="px-3 py-2 text-xs text-gray-600 hover:text-gray-800 transition-colors"
         >
           Cancel
         </button>
         <button
           type="submit"
           disabled={loading || !content.trim()}
-          className="px-3 py-1.5 text-xs font-medium text-white bg-accent-text rounded-md hover:bg-accent-text/90 disabled:opacity-50 transition-colors"
+          className="px-4 py-2 text-xs font-medium text-white bg-accent-text rounded-lg hover:bg-accent-text/90 disabled:opacity-50 transition-colors"
         >
           {loading ? 'Posting...' : 'Reply'}
         </button>

@@ -5,6 +5,7 @@ export interface Venue {
   slug: string;
   description: string;
   address: string;
+  country: string;
   amenities: string[];
   capacity: number;
   price: number | null;

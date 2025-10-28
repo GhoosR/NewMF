@@ -8,6 +8,7 @@ import type { Practitioner } from '../../types/practitioners';
 
 interface PractitionerCardProps {
   practitioner: Practitioner;
+  showStatus?: boolean;
 }
 
 // Helper function to convert currency code to symbol
@@ -22,7 +23,7 @@ function getCurrencySymbol(currency: string = 'EUR'): string {
   return symbols[currency] || currency;
 }
 
-export function PractitionerCard({ practitioner }: PractitionerCardProps) {
+export function PractitionerCard({ practitioner, showStatus = false }: PractitionerCardProps) {
   const displayImage = practitioner.images?.[0] || 'https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?auto=format&fit=crop&q=80&w=400';
 
   const price = practitioner.starting_price ? `${getCurrencySymbol(practitioner.currency)}${practitioner.starting_price}` : null;
@@ -61,9 +62,16 @@ export function PractitionerCard({ practitioner }: PractitionerCardProps) {
               />
             </Link>
           )}
-          <span className="px-2 py-1 text-xs font-medium bg-accent-base text-accent-text rounded-full">
-            {formatCategoryName(practitioner.category)}
-          </span>
+          <div className="flex items-center space-x-2">
+            <span className="px-2 py-1 text-xs font-medium bg-accent-base text-accent-text rounded-full">
+              {formatCategoryName(practitioner.category)}
+            </span>
+            {showStatus && practitioner.approval_status === 'pending' && (
+              <span className="px-2 py-1 text-xs font-medium bg-yellow-100 text-yellow-800 rounded-full">
+                Pending
+              </span>
+            )}
+          </div>
         </div>
         
         <Link to={`/practitioners/${practitioner.slug}`}>

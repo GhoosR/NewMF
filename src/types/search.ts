@@ -6,5 +6,6 @@ export interface SearchResult {
   type: 'practitioner' | 'event' | 'venue' | 'course' | 'recipe' | 'user';
   username?: string;
   avatar_url?: string;
+  country?: string | null;
   created_at: string;
 }

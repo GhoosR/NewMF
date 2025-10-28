@@ -19,10 +19,10 @@ export function compressImage(file: File, options: CompressionOptions = {}): Pro
     }
     
     new Compressor(file, {
-      quality: options.quality || 0.8,
-      maxWidth: options.maxWidth || 800,
-      maxHeight: options.maxHeight || 800,
-      convertSize: options.convertSize || 1000000, // Convert to JPEG if > 1MB
+      quality: options.quality || 0.7, // Reduced default quality
+      maxWidth: options.maxWidth || 1080, // Increased default max width
+      maxHeight: options.maxHeight || 1080, // Increased default max height
+      convertSize: options.convertSize || 2000000, // Convert to JPEG if > 2MB
       mimeType: 'auto',
       strict: false,
       checkOrientation: true,

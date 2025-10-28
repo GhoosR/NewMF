@@ -36,7 +36,7 @@ export function WelcomePopup({ onClose }: { onClose: () => void }) {
     {
       icon: Calendar,
       title: 'Host Events',
-      description: 'Organize and promote wellness events in your community'
+      description: 'Organise and promote wellness events in your community'
     },
     {
       icon: Building2,

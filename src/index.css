@@ -6,15 +6,81 @@
   html {
     font-family: 'Figtree', system-ui, sans-serif;
     -webkit-tap-highlight-color: transparent;
+    scroll-behavior: smooth;
   }
   
   h1 {
     @apply font-gelica;
+    color: #2F4F3E;
+  }
+  
+  h2 {
+    color: #2F4F3E;
+  }
+  
+  h3 {
+    color: #2F4F3E;
+  }
+  
+  h4 {
+    color: #2F4F3E;
+  }
+  
+  h5 {
+    color: #2F4F3E;
+  }
+  
+  h6 {
+    color: #2F4F3E;
+  }
+
+  /* Custom text colors for consistency */
+  .text-primary {
+    color: #2F4F3E;
+  }
+  
+  .text-secondary {
+    color: #5A6B5A;
+  }
+  
+  .text-tertiary {
+    color: #6B7A6B;
   }
 
   /* Improve touch targets on mobile */
   button, a {
     @apply touch-manipulation;
+  }
+}
+
+@layer utilities {
+  /* Animation utilities */
+  .animate-fade-in {
+    animation: fadeIn 0.3s ease-out;
+  }
+  
+  .animate-slide-up {
+    animation: slideUp 0.3s ease-out;
+  }
+  
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+  
+  @keyframes slideUp {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
   }
 }
 

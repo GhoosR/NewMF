@@ -84,7 +84,7 @@ export function ListingCard({ listing, onApprove, onReject }: ListingCardProps) 
 
       <div className="flex justify-end mt-4">
         <Link
-          to={`/${listing.type}s/${listing.id}`}
+          to={`/${listing.type}s/${listing.slug}`}
           className="text-sm text-accent-text hover:text-accent-text/80"
         >
           View Details

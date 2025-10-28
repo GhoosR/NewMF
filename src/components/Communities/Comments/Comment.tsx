@@ -7,21 +7,25 @@ import { formatDate } from '../../../lib/utils/dateUtils';
 import { ReplyForm } from './ReplyForm';
 import { supabase } from '../../../lib/supabase';
 import { renderContentWithMentions } from '../../../lib/utils/mentionUtils';
+import { useAdmin } from '../../../lib/hooks/useAdmin';
 import type { CommentType } from '../../../types/communities';
 
 interface CommentProps {
   comment: CommentType;
   onReplyAdded: () => void;
+  onCommentDeleted?: () => void;
   level?: number;
 }
 
-export function Comment({ comment, onReplyAdded, level = 0 }: CommentProps) {
+export function Comment({ comment, onReplyAdded, onCommentDeleted, level = 0 }: CommentProps) {
   const [showReplyForm, setShowReplyForm] = useState(false);
   const [showMenu, setShowMenu] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [editContent, setEditContent] = useState(comment.content);
   const [saving, setSaving] = useState(false);
   const [isOwnComment, setIsOwnComment] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const { isAdmin } = useAdmin();
   const menuRef = React.useRef<HTMLDivElement>(null);
 
   React.useEffect(() => {
@@ -85,17 +89,23 @@ export function Comment({ comment, onReplyAdded, level = 0 }: CommentProps) {
     if (!window.confirm('Are you sure you want to delete this comment?')) return;
 
     try {
+      setIsDeleting(true);
       const { error } = await supabase
         .from('community_post_comments')
         .delete()
         .eq('id', comment.id);
 
       if (error) throw error;
-      onReplyAdded(); // Refresh the comments
+      onCommentDeleted?.(); // Notify parent component
     } catch (error) {
       console.error('Error deleting comment:', error);
+      alert('Failed to delete comment');
+    } finally {
+      setIsDeleting(false);
     }
   };
+
+  const canDelete = isAdmin || isOwnComment;
 
   return (
     <div className="flex space-x-3">
@@ -117,29 +127,33 @@ export function Comment({ comment, onReplyAdded, level = 0 }: CommentProps) {
             />
             <span className="text-xs text-content/60">
               {formatDate(new Date(comment.created_at))}
-              {isOwnComment && (
+              {canDelete && (
                 <div className="relative" ref={menuRef}>
                   <button 
                     onClick={() => setShowMenu(!showMenu)}
                     className="p-1 text-gray-400 hover:text-gray-600 rounded-full hover:bg-gray-100 transition-colors"
+                    disabled={isDeleting}
                   >
                     <MoreVertical className="h-3 w-3" />
                   </button>
                   {showMenu && (
                     <div className="absolute right-0 mt-1 w-32 bg-white rounded-lg shadow-lg py-1 z-10 border border-gray-200">
-                      <button
-                        onClick={handleEdit}
-                        className="w-full text-left px-3 py-1.5 text-xs text-gray-700 hover:bg-gray-100 flex items-center transition-colors"
-                      >
-                        <Edit className="h-3 w-3 mr-1" />
-                        Edit
-                      </button>
+                      {isOwnComment && (
+                        <button
+                          onClick={handleEdit}
+                          className="w-full text-left px-3 py-1.5 text-xs text-gray-700 hover:bg-gray-100 flex items-center transition-colors"
+                        >
+                          <Edit className="h-3 w-3 mr-1" />
+                          Edit
+                        </button>
+                      )}
                       <button
                         onClick={handleDeleteComment}
                         className="w-full text-left px-3 py-1.5 text-xs text-red-600 hover:bg-red-50 flex items-center transition-colors"
+                        disabled={isDeleting}
                       >
                         <Trash2 className="h-3 w-3 mr-1" />
-                        Delete
+                        {isDeleting ? 'Deleting...' : 'Delete'}
                       </button>
                     </div>
                   )}

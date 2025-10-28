@@ -6,12 +6,13 @@ import { Avatar } from '../components/Profile/Avatar';
 import { Username } from '../components/Profile/Username';
 import { Auth } from '../components/Auth';
 import { CourseForm } from '../components/Courses/CourseForm';
+import { Meta } from '../components/Meta';
 import { formatPrice } from '../lib/utils/formatters';
 import { formatCategoryName } from '../lib/utils/formatters';
 import type { Course } from '../types/courses';
 
 export function CourseDetails() {
-  const { id } = useParams<{ id: string }>();
+  const { slug } = useParams<{ slug: string }>();
   const navigate = useNavigate();
   const [course, setCourse] = useState<Course | null>(null);
   const [loading, setLoading] = useState(true);
@@ -23,23 +24,11 @@ export function CourseDetails() {
 
   useEffect(() => {
     async function fetchCourse() {
-      if (!id) return;
+      if (!slug) return;
       
       try {
         const { data: { user: currentUser } } = await supabase.auth.getUser();
         
-        // Check enrollment if user is logged in
-        if (currentUser) {
-          const { data: enrollment } = await supabase
-            .from('course_enrollments')
-            .select('status')
-            .eq('course_id', id)
-            .eq('user_id', currentUser.id)
-            .maybeSingle();
-
-          setIsEnrolled(enrollment?.status === 'active');
-        }
-
         // Fetch course with lessons
         const { data, error: fetchError } = await supabase
           .from('courses')
@@ -60,7 +49,7 @@ export function CourseDetails() {
               verified
             )
           `)
-          .eq('id', id)
+          .eq('slug', slug)
           .single();
 
         if (fetchError) throw fetchError;
@@ -68,6 +57,18 @@ export function CourseDetails() {
 
         setCourse(data);
         setIsOwnCourse(currentUser?.id === data.user_id);
+
+        // Check enrollment if user is logged in
+        if (currentUser) {
+          const { data: enrollment } = await supabase
+            .from('course_enrollments')
+            .select('status')
+            .eq('course_id', data.id)
+            .eq('user_id', currentUser.id)
+            .maybeSingle();
+
+          setIsEnrolled(enrollment?.status === 'active');
+        }
       } catch (err: any) {
         console.error('Error fetching course:', err);
         setError(err.message);
@@ -77,10 +78,10 @@ export function CourseDetails() {
     }
 
     fetchCourse();
-  }, [id]);
+  }, [slug]);
 
   const handleDelete = async () => {
-    if (!id || !window.confirm('Are you sure you want to delete this course? This action cannot be undone.')) {
+    if (!course?.id || !window.confirm('Are you sure you want to delete this course? This action cannot be undone.')) {
       return;
     }
 
@@ -88,7 +89,7 @@ export function CourseDetails() {
       const { error: deleteError } = await supabase
         .from('courses')
         .delete()
-        .eq('id', id);
+        .eq('id', course.id);
 
       if (deleteError) throw deleteError;
       navigate('/courses');
@@ -128,7 +129,7 @@ export function CourseDetails() {
       if (enrollError) throw enrollError;
 
       setIsEnrolled(true);
-      navigate(`/courses/${id}/learn`);
+      navigate(`/courses/${slug}/learn`);
     } catch (err: any) {
       console.error('Error enrolling in course:', err);
       alert('Failed to enroll in course. Please try again.');
@@ -173,7 +174,14 @@ export function CourseDetails() {
   const lessonCount = course.lessons?.length || 0;
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <>
+      <Meta 
+        title={course.title}
+        description={course.description}
+        image={course.thumbnail_url}
+        type="article"
+      />
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <Link 
         to="/courses"
         className="inline-flex items-center text-accent-text hover:text-accent-text/80 mb-6"
@@ -339,7 +347,7 @@ export function CourseDetails() {
           {isEnrolled && (
             <div className="mt-8">
               <button
-                onClick={() => navigate(`/courses/${course.id}/learn`)}
+                onClick={() => navigate(`/courses/${course.slug}/learn`)}
                 className="w-full px-6 py-3 bg-accent-text text-white rounded-lg hover:bg-accent-text/90 transition-colors"
               >
                 Continue Learning
@@ -364,6 +372,7 @@ export function CourseDetails() {
           onClose={() => setShowAuthModal(false)} 
         />
       )}
-    </div>
+      </div>
+    </>
   );
 }

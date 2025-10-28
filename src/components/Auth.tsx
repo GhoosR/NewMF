@@ -20,6 +20,8 @@ export function Auth({ onClose }: AuthProps) {
   const [error, setError] = useState('');
   const [resetSent, setResetSent] = useState(false);
   const [resetEmail, setResetEmail] = useState('');
+  
+  
   const modalRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -81,21 +83,26 @@ export function Auth({ onClose }: AuthProps) {
     
     try {
       if (mode === 'signup') {
-        const isAvailable = await checkUsernameAvailability(username);
-        if (!isAvailable) {
-          throw new Error('This username is already taken. Please choose another one.');
-        }
-
+        console.log('🚀 STARTING SIGNUP PROCESS');
+        console.log('📧 CALLING SIGNUP FUNCTION');
         const result = await signUp(email, password, username);
+        console.log('🔍 SIGNUP RESULT:', result);
         
-        // Close modal first
-        onClose?.();
-        
-        // Wait a bit for the session to be set, then redirect to profile
+        // Redirect new user to onboarding page
         if (result?.user) {
+          console.log('✅ USER CREATED:', result.user.id);
+          
+          // Close auth modal first
+          onClose?.();
+          
+          // Redirect to onboarding page
           setTimeout(() => {
-            window.location.href = `/profile/${username}`;
+            window.location.href = '/onboarding';
           }, 500);
+        } else {
+          console.log('❌ NO USER IN RESULT');
+          // Close auth modal even if no user (error case)
+          onClose?.();
         }
       } else if (mode === 'signin') {
         await signIn(email, password);
@@ -108,14 +115,17 @@ export function Auth({ onClose }: AuthProps) {
         setResetSent(true);
       }
     } catch (err: any) {
+      console.error('❌ SIGNUP ERROR:', err);
       setError(err.message);
     } finally {
       setLoading(false);
     }
   };
 
+
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <>
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div ref={modalRef} className="w-full h-full md:h-auto md:max-w-5xl bg-white md:rounded-lg overflow-hidden flex flex-col md:flex-row shadow-xl">
         {/* Close button */}
         <button
@@ -333,7 +343,7 @@ export function Auth({ onClose }: AuthProps) {
                 </div>
               </div>
             </div>
-            <h2 className="text-4xl font-gelica font-bold text-center mb-4">
+            <h2 className="text-4xl font-gelica font-bold text-center mb-4 text-white">
               Have your own personal wellness space
             </h2>
             <p className="text-white/90 text-center max-w-md">
@@ -342,7 +352,8 @@ export function Auth({ onClose }: AuthProps) {
           </div>
         </div>
       </div>
-    </div>
+      </div>
+    </>
   );
 }
 

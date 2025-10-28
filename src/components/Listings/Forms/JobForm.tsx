@@ -58,7 +58,7 @@ export function JobForm({ onClose, onSuccess, editId }: JobFormProps) {
     requirements: [] as string[],
     contact_email: ''
   });
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(!!editId);
   const [error, setError] = useState('');
 
   useEffect(() => {
@@ -304,6 +304,19 @@ export function JobForm({ onClose, onSuccess, editId }: JobFormProps) {
         );
     }
   };
+
+  if (loading) {
+    return (
+      <Modal title="Add Job Listing" onClose={onClose} fullScreenOnMobile={true}>
+        <div className="max-w-2xl mx-auto">
+          <div className="flex items-center justify-center py-8">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-accent-text"></div>
+            <span className="ml-3 text-content">Loading job data...</span>
+          </div>
+        </div>
+      </Modal>
+    );
+  }
 
   return (
     <Modal title="Add Job Listing" onClose={onClose} fullScreenOnMobile={true}>

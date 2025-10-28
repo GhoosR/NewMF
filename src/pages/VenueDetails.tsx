@@ -7,6 +7,7 @@ import { Username } from '../components/Profile/Username';
 import { BookmarkButton } from '../components/BookmarkButton';
 import { VenueForm } from '../components/Listings/Forms/VenueForm';
 import { ImageGalleryModal } from '../components/ui/ImageGalleryModal';
+import { Meta } from '../components/Meta';
 import { formatCategoryName } from '../lib/utils/formatters';
 import type { Venue } from '../types/venues';
 
@@ -114,7 +115,14 @@ export function VenueDetails() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <>
+      <Meta 
+        title={`${venue.name} - Wellness Venue`}
+        description={`Discover ${venue.name}, a ${venue.category} venue. ${venue.description.substring(0, 150)}...`}
+        image={venue.image_url}
+        type="place"
+      />
+      <div className="min-h-screen bg-gray-50">
       <div className="w-full px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto py-8">
         <Link 
           to="/venues"
@@ -365,7 +373,8 @@ export function VenueDetails() {
           }}
         />
       )}
-    </div>
+      </div>
+    </>
   );
 }
 

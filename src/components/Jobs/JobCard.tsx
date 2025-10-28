@@ -8,9 +8,10 @@ import type { Job } from '../../types/jobs';
 
 interface JobCardProps {
   job: Job;
+  showStatus?: boolean;
 }
 
-export function JobCard({ job }: JobCardProps) {
+export function JobCard({ job, showStatus = false }: JobCardProps) {
   return (
     <div className="bg-background rounded-lg shadow-sm overflow-hidden hover:shadow-md transition-shadow">
       <div className="p-6">
@@ -33,9 +34,16 @@ export function JobCard({ job }: JobCardProps) {
                 />
               </Link>
             )}
-            <span className="px-2 py-1 text-xs font-medium bg-accent-base text-accent-text rounded-full">
-              {formatCategoryName(job.job_type)}
-            </span>
+            <div className="flex items-center space-x-2">
+              <span className="px-2 py-1 text-xs font-medium bg-accent-base text-accent-text rounded-full">
+                {formatCategoryName(job.job_type)}
+              </span>
+              {showStatus && job.approval_status === 'pending' && (
+                <span className="px-2 py-1 text-xs font-medium bg-yellow-100 text-yellow-800 rounded-full">
+                  Pending
+                </span>
+              )}
+            </div>
           </div>
 
           <Link to={`/jobs/${job.slug}`}>

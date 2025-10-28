@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { MapPin, Globe, ArrowLeft, Mic2, Coins, Edit, Trash2, FileText, CheckCircle, MessageSquare } from 'lucide-react';
+import { MapPin, Globe, ArrowLeft, Mic2, Coins, Edit, Trash2, FileText, CheckCircle, MessageSquare, Calendar, X } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { PackageDisplay } from '../components/Practitioners/PackageDisplay';
 import { Avatar } from '../components/Profile/Avatar';
@@ -8,10 +8,12 @@ import { Username } from '../components/Profile/Username';
 import { BookmarkButton } from '../components/BookmarkButton';
 import { PractitionerForm } from '../components/Listings/Forms/PractitionerForm';
 import { ImageGalleryModal } from '../components/ui/ImageGalleryModal';
+import { BookingForm } from '../components/Bookings/BookingForm';
+import { Meta } from '../components/Meta';
 import { languages } from '../lib/constants/languages';
 import { europeanCountries } from '../lib/constants/countries';
 import { formatCategoryName, formatWorkArrangement } from '../lib/utils/formatters';
-import type { Practitioner } from '../types/practitioners';
+import type { Practitioner, PractitionerPackage } from '../types/practitioners';
 
 export function PractitionerDetails() {
   const { slug } = useParams<{ slug: string }>();
@@ -26,6 +28,8 @@ export function PractitionerDetails() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [showImageGallery, setShowImageGallery] = useState(false);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
+  const [showBookingForm, setShowBookingForm] = useState(false);
+  const [bookingAvailable, setBookingAvailable] = useState(true);
 
   const getFullLanguages = (languageString: string) => {
     return languageString.split(',')
@@ -137,6 +141,7 @@ export function PractitionerDetails() {
 
         setPractitioner(practitionerData);
         setPackages(packagesData || []);
+        setBookingAvailable(practitionerData.booking_available ?? true);
 
         setIsOwnProfile(currentUser?.id === practitionerData.user_id);
       } catch (err: any) {
@@ -187,7 +192,14 @@ export function PractitionerDetails() {
   const price = practitioner.price_list ? formatPriceList(practitioner.price_list) : null;
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <>
+      <Meta 
+        title={`${practitioner.title} - ${formatCategoryName(practitioner.category)} Practitioner`}
+        description={`Connect with ${practitioner.title}, a ${formatCategoryName(practitioner.category)} practitioner. ${practitioner.description ? practitioner.description.substring(0, 150) : 'Professional wellness practitioner'}...`}
+        image={practitioner.user?.avatar_url}
+        type="profile"
+      />
+      <div className="min-h-screen bg-gray-50">
       <div className="w-full px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto py-8">
         <Link 
           to="/practitioners"
@@ -239,20 +251,39 @@ export function PractitionerDetails() {
                   {!isOwnProfile && practitioner.user && (
                     <>
                       {isAuthenticated ? (
-                        <Link
-                          to={`/chat/${practitioner.user.id}`}
-                          className="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-accent-text rounded-md hover:bg-accent-text/90 transition-colors"
-                        >
-                          <MessageSquare className="h-4 w-4 mr-2" />
-                          Message
-                        </Link>
+                        <>
+                          {bookingAvailable ? (
+                            <button
+                              onClick={() => setShowBookingForm(true)}
+                              className="inline-flex items-center px-4 py-2 text-sm font-medium text-white rounded-md transition-colors"
+                              style={{ backgroundColor: '#F59E0B' }}
+                              onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#D97706'}
+                              onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#F59E0B'}
+                            >
+                              <Calendar className="h-4 w-4 mr-2" />
+                              Book Session
+                            </button>
+                          ) : (
+                            <div className="inline-flex items-center px-4 py-2 text-sm font-medium text-gray-500 bg-gray-100 rounded-md cursor-not-allowed">
+                              <X className="h-4 w-4 mr-2" />
+                              Bookings Currently Unavailable
+                            </div>
+                          )}
+                          <Link
+                            to={`/chat/${practitioner.user.id}`}
+                            className="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-accent-text rounded-md hover:bg-accent-text/90 transition-colors"
+                          >
+                            <MessageSquare className="h-4 w-4 mr-2" />
+                            Message
+                          </Link>
+                        </>
                       ) : (
                         <button
                           onClick={() => window.dispatchEvent(new CustomEvent('show-auth'))}
                           className="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-accent-text rounded-md hover:bg-accent-text/90 transition-colors"
                         >
-                          <MessageSquare className="h-4 w-4 mr-2" />
-                          Sign in to Message
+                          <Calendar className="h-4 w-4 mr-2" />
+                          Sign in to Book
                         </button>
                       )}
                     </>
@@ -426,16 +457,20 @@ export function PractitionerDetails() {
         />
       )}
 
-      {showEditModal && (
-        <PractitionerForm
-          onClose={() => setShowEditModal(null)}
-          editPractitioner={showEditModal}
-          onSuccess={() => {
-            setShowEditModal(null);
-            window.location.reload();
-          }}
-        />
+      {showBookingForm && practitioner && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <BookingForm
+            practitionerId={practitioner.id}
+            practitionerName={practitioner.title}
+            onClose={() => setShowBookingForm(false)}
+            onBookingCreated={(booking) => {
+              setShowBookingForm(false);
+              alert('Booking request sent successfully! The practitioner will be notified.');
+            }}
+          />
+        </div>
       )}
-    </div>
+      </div>
+    </>
   );
 }

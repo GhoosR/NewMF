@@ -15,6 +15,7 @@ export interface Practitioner {
   user_id: string;
   category: string;
   title: string;
+  slug: string;
   description: string;
   work_arrangement: string;
   corporate_wellness: boolean;
@@ -45,7 +46,7 @@ export interface PractitionerFormData {
   packages: {
     name: string;
     description: string;
-    price: number;
+    price: number | string;
     features: string[];
   }[];
 }

@@ -6,6 +6,7 @@ export interface Job {
   company_name: string;
   description: string;
   location: string;
+  country: string;
   job_type: string;
   salary_range: string;
   requirements: string[];

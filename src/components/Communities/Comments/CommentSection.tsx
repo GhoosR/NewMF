@@ -8,9 +8,10 @@ import type { CommentType } from '../../../types/communities';
 interface CommentSectionProps {
   postId: string;
   onCommentAdded: () => void;
+  onCommentDeleted?: () => void;
 }
 
-export function CommentSection({ postId, onCommentAdded }: CommentSectionProps) {
+export function CommentSection({ postId, onCommentAdded, onCommentDeleted }: CommentSectionProps) {
   const [comments, setComments] = useState<CommentType[]>([]);
   const [newComment, setNewComment] = useState('');
   const [loading, setLoading] = useState(false);
@@ -148,26 +149,32 @@ export function CommentSection({ postId, onCommentAdded }: CommentSectionProps) 
             key={comment.id}
             comment={comment}
             onReplyAdded={fetchComments}
+            onCommentDeleted={() => {
+              fetchComments();
+              onCommentDeleted?.();
+            }}
           />
         ))}
       </div>
 
-      <form onSubmit={handleSubmit} className="flex items-center space-x-2">
+      <form onSubmit={handleSubmit} className="bg-white border border-gray-200 rounded-xl shadow-sm">
         <UserMentionInput
           value={newComment}
           onChange={(e) => setNewComment(e.target.value)}
           onMentionedUsersChange={setMentionedUsers}
           placeholder="Write a comment..."
-          className="flex-1 bg-accent-base/20 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-accent-text"
-          rows={1}
+          className="w-full bg-transparent border-0 rounded-xl px-4 py-4 text-sm focus:outline-none focus:ring-0 resize-none min-h-[60px]"
+          rows={2}
         />
-        <button
-          type="submit"
-          disabled={loading || !newComment.trim()}
-          className="px-4 py-2 text-sm font-medium text-white bg-accent-text rounded-md hover:bg-accent-text/90 disabled:opacity-50"
-        >
-          {loading ? 'Posting...' : 'Post'}
-        </button>
+        <div className="flex justify-end px-4 pb-4">
+          <button
+            type="submit"
+            disabled={loading || !newComment.trim()}
+            className="px-6 py-2 text-sm font-medium text-white bg-accent-text rounded-lg hover:bg-accent-text/90 disabled:opacity-50 transition-colors"
+          >
+            {loading ? 'Posting...' : 'Post'}
+          </button>
+        </div>
       </form>
     </div>
   );

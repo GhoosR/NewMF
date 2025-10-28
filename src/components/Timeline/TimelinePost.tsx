@@ -11,6 +11,7 @@ import { uploadMedia } from '../../lib/storage';
 import { renderContentWithMentions } from '../../lib/utils/mentionUtils';
 import { UserMentionInput } from '../ui/UserMentionInput';
 import { createNotification } from '../../lib/notifications';
+import { useAdmin } from '../../lib/hooks/useAdmin';
 import type { TimelinePost as TimelinePostType } from '../../types/timeline';
 
 interface TimelinePostProps {
@@ -33,6 +34,7 @@ export function TimelinePost({ post, commentCount, onDelete }: TimelinePostProps
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [mentionedUsers, setMentionedUsers] = useState<string[]>([]);
   const [currentUser, setCurrentUser] = useState<any>(null);
+  const { isAdmin } = useAdmin();
 
   // Get current user on mount
   React.useEffect(() => {
@@ -242,7 +244,7 @@ export function TimelinePost({ post, commentCount, onDelete }: TimelinePostProps
                 {formatDate(new Date(post.created_at))}
               </span>
             </div>
-            {isOwnPost && (
+            {(isOwnPost || isAdmin) && (
               <div className="relative" ref={menuRef}>
                 <button 
                   onClick={() => setShowMenu(!showMenu)}
@@ -254,15 +256,17 @@ export function TimelinePost({ post, commentCount, onDelete }: TimelinePostProps
                 </button>
                 {showMenu && (
                   <div className="absolute right-0 mt-1 w-48 bg-white rounded-lg shadow-lg py-1 z-10 border border-accent-text/10">
-                    <button
-                      onClick={() => {
-                        handleEdit();
-                        setShowMenu(false);
-                      }}
-                      className="w-full text-left px-4 py-2 text-sm text-content hover:bg-accent-base/10 transition-colors"
-                    >
-                      Edit
-                    </button>
+                    {isOwnPost && (
+                      <button
+                        onClick={() => {
+                          handleEdit();
+                          setShowMenu(false);
+                        }}
+                        className="w-full text-left px-4 py-2 text-sm text-content hover:bg-accent-base/10 transition-colors"
+                      >
+                        Edit
+                      </button>
+                    )}
                     <button
                       onClick={() => {
                         if (window.confirm('Are you sure you want to delete this post?')) {
@@ -457,7 +461,8 @@ export function TimelinePost({ post, commentCount, onDelete }: TimelinePostProps
             <div className="mt-4 pt-4 border-t border-accent-text/10">
               <CommentSection 
                 postId={post.id} 
-                onCommentAdded={onDelete || (() => {})} 
+                onCommentAdded={onDelete || (() => {})}
+                onCommentDeleted={onDelete || (() => {})}
               />
             </div>
           )}

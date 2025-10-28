@@ -157,7 +157,7 @@ export function Courses() {
       {/* Desktop Hero */}
       <div className="hidden lg:block">
         <Hero
-          title="Explore, Learn, and Grow at Your Own Pace."
+          title="Explore, Learn, and Grow at Your Own Pace"
           subtitle="Join a community of passionate instructors and enthusiastic learners. Dive into a world of learning with our vibrant, community-curated wellness courses. "
           image="https://afvltpqnhmaxanirwnqz.supabase.co/storage/v1/object/public/blog-images/59bed50f-5ccf-4265-87fa-7743af34d361/Man%20teaching%20a%20woman%20about%20wellness%20courses.webp"
           showAddListing={isAdmin}

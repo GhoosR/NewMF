@@ -13,6 +13,7 @@ import {
   startConversation, 
   getConversationMessages, 
   sendMessage, 
+  sendVoiceMessage,
   getConversations,
   subscribeToConversation,
   subscribeToConversationUpdates
@@ -446,6 +447,58 @@ export function Chat() {
     }
   };
 
+  const handleSendVoiceMessage = async (audioBlob: Blob, duration: number) => {
+    if (!conversationId) return;
+    const tempId = crypto.randomUUID();
+    try {
+      // Add voice message locally first for better UX
+      const localMessage = {
+        id: tempId,
+        content: '🎤 Voice message',
+        messageType: 'voice',
+        audioUrl: URL.createObjectURL(audioBlob),
+        audioDuration: duration,
+        created_at: new Date().toISOString(),
+        sender: {
+          id: currentUser?.id || '',
+          username: currentUser?.username || 'You',
+          avatar_url: currentUser?.avatar_url,
+          isOnline: true,
+          isCurrentUser: true
+        },
+        timestamp: new Date().toLocaleTimeString([], {
+          hour: 'numeric',
+          minute: '2-digit',
+          hour12: true
+        }),
+        status: 'sent'
+      };
+      
+      setMessages(prev => [...prev, localMessage]);
+
+      // Send voice message to server
+      await sendVoiceMessage(conversationId, audioBlob, duration);
+
+      // Move current conversation to top of list immediately
+      setConversations(prev => {
+        const currentConv = prev.find(c => c.id === conversationId);
+        if (!currentConv) return prev;
+        
+        const filtered = prev.filter(c => c.id !== conversationId);
+        return [{
+          ...currentConv,
+          lastMessage: '🎤 Voice message',
+          lastMessageAt: new Date().toISOString()
+        }, ...filtered];
+      });
+    } catch (err) {
+      console.error('Error sending voice message:', err);
+      // Remove the temporary message if sending failed
+      setMessages(prev => prev.filter(msg => msg.id !== tempId));
+      throw new Error('Failed to send voice message. Please try again.');
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex justify-center items-center min-h-screen">
@@ -628,15 +681,14 @@ export function Chat() {
                   currentUser={currentUser}
                   className="w-full h-full lg:min-h-[500px]"
                   initialMessage={initialMessage}
+                  onSendMessage={handleSendMessage}
+                  onSendVoiceMessage={handleSendVoiceMessage}
                    onLoadMore={async (oldestMessageCreatedAt) => {
                      if (!conversationId) return [];
                      return getConversationMessages(conversationId, oldestMessageCreatedAt, 30);
                    }}
                  />
                </div>
-               
-               {/* Chat Input - positioned above mobile bottom nav */}
-               <ChatInput onSendMessage={handleSendMessage} />
              </div>
              )
            ) : (

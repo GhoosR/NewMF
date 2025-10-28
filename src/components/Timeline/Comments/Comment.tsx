@@ -1,25 +1,74 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
-import { Reply } from 'lucide-react';
+import { Reply, Trash2, MoreVertical } from 'lucide-react';
 import { Avatar } from '../../Profile/Avatar';
 import { formatDate } from '../../../lib/utils/dateUtils';
 import { ReplyForm } from './ReplyForm';
 import type { TimelineComment } from '../../../types/timeline';
 import { renderContentWithMentions } from '../../../lib/utils/mentionUtils';
+import { supabase } from '../../../lib/supabase';
+import { useAdmin } from '../../../lib/hooks/useAdmin';
 
 interface CommentProps {
   comment: TimelineComment;
   onReplyAdded: () => void;
+  onCommentDeleted?: () => void;
   level?: number;
 }
 
-export function Comment({ comment, onReplyAdded, level = 0 }: CommentProps) {
+export function Comment({ comment, onReplyAdded, onCommentDeleted, level = 0 }: CommentProps) {
   const [showReplyForm, setShowReplyForm] = useState(false);
+  const [showMenu, setShowMenu] = useState(false);
+  const [isOwnComment, setIsOwnComment] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const { isAdmin } = useAdmin();
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const checkOwnership = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      setIsOwnComment(user?.id === comment.user_id);
+    };
+    checkOwnership();
+  }, [comment.user_id]);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        setShowMenu(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   const handleReplySuccess = () => {
     setShowReplyForm(false);
     onReplyAdded();
   };
+
+  const handleDeleteComment = async () => {
+    if (!window.confirm('Are you sure you want to delete this comment?')) return;
+
+    try {
+      setIsDeleting(true);
+      const { error } = await supabase
+        .from('timeline_post_comments')
+        .delete()
+        .eq('id', comment.id);
+
+      if (error) throw error;
+      onCommentDeleted?.();
+    } catch (error) {
+      console.error('Error deleting comment:', error);
+      alert('Failed to delete comment');
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
+  const canDelete = isAdmin || isOwnComment;
 
   return (
     <div className="flex space-x-3">
@@ -39,9 +88,34 @@ export function Comment({ comment, onReplyAdded, level = 0 }: CommentProps) {
             <span className="font-medium text-sm text-content">
               {comment.user?.username || 'Anonymous'}
             </span>
-            <span className="text-xs text-content/60">
-              {formatDate(new Date(comment.created_at))}
-            </span>
+            <div className="flex items-center space-x-2">
+              <span className="text-xs text-content/60">
+                {formatDate(new Date(comment.created_at))}
+              </span>
+              {canDelete && (
+                <div className="relative" ref={menuRef}>
+                  <button
+                    onClick={() => setShowMenu(!showMenu)}
+                    className="p-1 hover:bg-accent-text/10 rounded transition-colors"
+                    disabled={isDeleting}
+                  >
+                    <MoreVertical className="h-4 w-4 text-content/60" />
+                  </button>
+                  {showMenu && (
+                    <div className="absolute right-0 top-8 bg-white border border-accent-text/10 rounded-lg shadow-lg z-10 min-w-[120px]">
+                      <button
+                        onClick={handleDeleteComment}
+                        className="w-full px-3 py-2 text-left text-sm text-red-600 hover:bg-red-50 flex items-center space-x-2"
+                        disabled={isDeleting}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                        <span>{isDeleting ? 'Deleting...' : 'Delete'}</span>
+                      </button>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
           </div>
           <div 
             className="text-sm text-content/80"

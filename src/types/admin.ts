@@ -6,10 +6,10 @@ import type { Course } from './courses';
 import type { Recipe } from './recipes';
 
 export type AdminListing = (
-  | (Practitioner & { type: 'practitioner' })
-  | (Event & { type: 'event' })
-  | (Venue & { type: 'venue' })
-  | (Job & { type: 'job' })
-  | (Course & { type: 'course' })
-  | (Recipe & { type: 'recipe' })
+  | (Practitioner & { type: 'practitioner'; slug: string })
+  | (Event & { type: 'event'; slug: string })
+  | (Venue & { type: 'venue'; slug: string })
+  | (Job & { type: 'job'; slug: string })
+  | (Course & { type: 'course'; slug: string })
+  | (Recipe & { type: 'recipe'; slug: string })
 );

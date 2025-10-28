@@ -12,6 +12,7 @@ import { CoursesTab } from './profile/CoursesTab';
 import { RecipesTab } from './profile/RecipesTab';
 import { PaymentSettingsTab } from './profile/PaymentSettings';
 import { BadgesTab } from '../components/Profile/BadgesTab';
+import { MyBookings } from './MyBookings';
 
 // Array of gradient backgrounds
 const gradients = [
@@ -142,6 +143,7 @@ export default function Profile() {
               <Route path="recipes" element={<RecipesTab userId={profile.id} />} />
               {isAdmin && <Route path="courses" element={<CoursesTab userId={profile.id} />} />}
               {isOwnProfile && <Route path="badges" element={<BadgesTab userId={profile.id} />} />}
+              {isOwnProfile && <Route path="bookings" element={<MyBookings />} />}
               {isOwnProfile && (
                 <Route path="payment-settings" element={<PaymentSettingsTab userId={profile.id} />} />
               )}

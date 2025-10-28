@@ -23,7 +23,8 @@ export function CommunityPostPage() {
               username,
               avatar_url
             ),
-            _count: community_post_likes(count)
+            community_post_likes(count),
+            community_post_comments(count)
           `)
           .eq('id', id)
           .single();

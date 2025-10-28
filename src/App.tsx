@@ -19,6 +19,7 @@ import { AdminDashboard } from './components/Admin/AdminDashboard';
 import { PostPage } from './pages/posts/PostPage';
 import { CommunityPostPage } from './pages/posts/CommunityPostPage';
 import { SubscriptionSuccess } from './pages/SubscriptionSuccess';
+import Onboarding from './pages/Onboarding';
 
 // Lazy load components for better performance
 const Practitioners = lazy(() => import('./pages/Practitioners').then(module => ({ default: module.Practitioners })));
@@ -57,6 +58,8 @@ const Advertise = lazy(() => import('./pages/Advertise').then(module => ({ defau
 const Notifications = lazy(() => import('./pages/Notifications').then(module => ({ default: module.Notifications })));
 const AboutUs = lazy(() => import('./pages/AboutUs').then(module => ({ default: module.AboutUs })));
 const Suggestions = lazy(() => import('./pages/Suggestions').then(module => ({ default: module.Suggestions })));
+const BookingOverview = lazy(() => import('./pages/BookingOverview').then(module => ({ default: module.BookingOverviewPage })));
+const MyBookings = lazy(() => import('./pages/MyBookings').then(module => ({ default: module.MyBookings })));
 
 function App() {
   const [session, setSession] = useState<Session | null>(null);
@@ -124,6 +127,7 @@ function App() {
       // Note: New user redirect is now handled by NewUserRedirect component
       setSession(session);
       if (session) {
+        // Always close auth modal when user signs in
         setShowAuth(false);
         startActivityTracking();
       } else {
@@ -231,7 +235,7 @@ function App() {
               <Route path="/jobs" element={<Jobs />} />
               <Route path="/jobs/:slug" element={<JobDetails />} />
               <Route path="/courses" element={<Courses />} />
-              <Route path="/courses/:id" element={<CourseDetails />} />
+              <Route path="/courses/:slug" element={<CourseDetails />} />
               <Route path="/recipes" element={<Recipes />} />
               <Route path="/recipes/id/:id" element={<RecipeRedirect />} />
               <Route path="/recipes/:slug" element={<RecipeDetails />} />
@@ -258,14 +262,17 @@ function App() {
               <Route path="/notifications" element={<Notifications />} />
               <Route path="/live-stream" element={<LiveStream />} />
               <Route path="/suggestions" element={<Suggestions />} />
+              <Route path="/bookings/:practitionerId" element={<BookingOverview />} />
+              <Route path="/my-bookings" element={<MyBookings />} />
 
               {/* Protected Routes - Require Authentication */}
               {session ? (
                 <>
+                  <Route path="/onboarding" element={<Onboarding />} />
                   <Route path="/communities/:id/*" element={<CommunityDetails />} />
                   <Route path="/communities/posts/:id" element={<CommunityPostPage />} />
                   <Route path="/posts/:id" element={<PostPage />} />
-                  <Route path="/courses/:id/learn" element={<CourseLessons />} />
+                  <Route path="/courses/:slug/learn" element={<CourseLessons />} />
                   <Route path="/profile/:username/*" element={<Profile />} />
                   <Route path="/admin" element={<AdminDashboard />} />
                   <Route path="/chat/:userId" element={<Chat />} />

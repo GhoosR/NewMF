@@ -6,6 +6,7 @@ import { Avatar } from '../components/Profile/Avatar';
 import { Username } from '../components/Profile/Username';
 import { BookmarkButton } from '../components/BookmarkButton';
 import { JobForm } from '../components/Listings/Forms/JobForm';
+import { Meta } from '../components/Meta';
 import { formatCategoryName } from '../lib/utils/formatters';
 import type { Job } from '../types/jobs';
 
@@ -109,7 +110,14 @@ export function JobDetails() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <>
+      <Meta 
+        title={`${job.title} - ${job.company} - Wellness Job`}
+        description={`Apply for ${job.title} at ${job.company}. ${job.description.substring(0, 150)}...`}
+        image={job.company_logo}
+        type="article"
+      />
+      <div className="min-h-screen bg-gray-50">
       <div className="w-full px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto py-8">
         <Link 
           to="/jobs"
@@ -258,6 +266,7 @@ export function JobDetails() {
           }}
         />
       )}
-    </div>
+      </div>
+    </>
   );
 }

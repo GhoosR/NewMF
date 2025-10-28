@@ -85,7 +85,7 @@ export function TimelineTab({ username }: TimelineTabProps) {
               name,
               type
             ),
-            _count: community_post_comments (count)
+            community_post_comments(count)
           `)
           .eq('user_id', userData.id)
           .order('created_at', { ascending: false });

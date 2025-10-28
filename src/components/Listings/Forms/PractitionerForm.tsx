@@ -55,7 +55,7 @@ export function PractitionerForm({ onClose, onSuccess, editId }: PractitionerFor
   const [certification, setCertification] = useState<File | null>(null);
   const [existingImages, setExistingImages] = useState<string[]>([]);
   const [existingCertificationUrl, setExistingCertificationUrl] = useState<string>('');
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(!!editId);
   const [error, setError] = useState('');
 
   // Fetch practitioner data if editing
@@ -89,7 +89,16 @@ export function PractitionerForm({ onClose, onSuccess, editId }: PractitionerFor
               }
             }
 
-            setFormData({
+            // Fetch existing packages
+            const { data: packagesData, error: packagesError } = await supabase
+              .from('practitioner_packages')
+              .select('*')
+              .eq('practitioner_id', data.id)
+              .order('price', { ascending: true });
+
+            if (packagesError) throw packagesError;
+
+            const newFormData = {
               category: data.category || '',
               title: data.title || '',
               description: data.description || '',
@@ -100,8 +109,16 @@ export function PractitionerForm({ onClose, onSuccess, editId }: PractitionerFor
               languages: data.language ? data.language.split(',').map(lang => lang.trim()) : [],
               hourly_rate: hourlyRate,
               currency: currency,
-              faqs: data.faqs || ''
-            });
+              faqs: data.faqs || '',
+              packages: packagesData ? packagesData.map(pkg => ({
+                name: pkg.name,
+                description: pkg.description,
+                price: pkg.price,
+                features: pkg.features || []
+              })) : []
+            };
+            
+            setFormData(newFormData);
             
             // Set existing images and certification
             if (data.images && data.images.length > 0) {
@@ -238,7 +255,7 @@ export function PractitionerForm({ onClose, onSuccess, editId }: PractitionerFor
           practitioner_id: practitionerId,
           name: pkg.name,
           description: pkg.description,
-          price: pkg.price,
+          price: typeof pkg.price === 'string' ? parseFloat(pkg.price) : pkg.price,
           currency: formData.currency,
           features: pkg.features
         })));
@@ -262,7 +279,7 @@ export function PractitionerForm({ onClose, onSuccess, editId }: PractitionerFor
         return formData.country && formData.work_arrangement;
       case 'packages':
         return formData.packages.every(pkg => 
-          pkg.name && pkg.description && pkg.price > 0 && pkg.features.length > 0 && pkg.features.every(f => f.trim() !== '')
+          pkg.name && pkg.description && pkg.price !== '' && pkg.price > 0 && pkg.features.length > 0 && pkg.features.every(f => f.trim() !== '')
         );
       case 'services':
         return formData.languages.length > 0;
@@ -429,20 +446,42 @@ export function PractitionerForm({ onClose, onSuccess, editId }: PractitionerFor
               label="Images"
               onChange={setImages}
               maxFiles={5}
-              maxSize={2}
               accept="image/*"
               multiple
-              description="Upload images of your practice, workspace, or yourself"
+              description="Upload images of your practice, workspace, or yourself (will be automatically compressed)"
             />
+
+            {existingImages.length > 0 && (
+              <div>
+                <h3 className="text-sm font-medium text-content mb-2">Existing Images</h3>
+                <div className="grid grid-cols-3 gap-2">
+                  {existingImages.map((url, index) => (
+                    <div key={index} className="relative">
+                      <img 
+                        src={url} 
+                        alt={`Practitioner image ${index + 1}`} 
+                        className="w-full h-24 object-cover rounded-lg"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setExistingImages(prev => prev.filter((_, i) => i !== index))}
+                        className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs"
+                      >
+                        ×
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
 
             {selectedCategory?.requiresCertification && (
               <FileInput
                 label="Certification"
                 onChange={(files) => setCertification(files[0])}
                 maxFiles={1}
-                maxSize={2}
                 accept="image/*,application/pdf"
-                description="Please upload your certification for this practice"
+                description="Please upload your certification for this practice (images will be automatically compressed)"
                 required
               />
             )}
@@ -451,8 +490,21 @@ export function PractitionerForm({ onClose, onSuccess, editId }: PractitionerFor
     }
   };
 
+  if (loading) {
+    return (
+      <Modal title={editId ? "Edit Practitioner Listing" : "Add Practitioner Listing"} onClose={onClose}>
+        <div className="max-w-2xl mx-auto">
+          <div className="flex items-center justify-center py-8">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-accent-text"></div>
+            <span className="ml-3 text-content">Loading practitioner data...</span>
+          </div>
+        </div>
+      </Modal>
+    );
+  }
+
   return (
-    <Modal title="Add Practitioner Listing" onClose={onClose}>
+    <Modal title={editId ? "Edit Practitioner Listing" : "Add Practitioner Listing"} onClose={onClose}>
       <div className="max-w-2xl mx-auto">
         {/* Progress Steps */}
         <div className="flex items-center justify-between mb-8">
@@ -505,7 +557,7 @@ export function PractitionerForm({ onClose, onSuccess, editId }: PractitionerFor
             disabled={!isStepValid() || loading}
             className="px-6 py-2 bg-accent-text text-white rounded-md hover:bg-accent-text/90 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {loading ? 'Creating...' : currentStep === 'media' ? 'Create Listing' : 'Next'}
+            {loading ? (editId ? 'Updating...' : 'Creating...') : currentStep === 'media' ? (editId ? 'Update Listing' : 'Create Listing') : 'Next'}
           </button>
         </div>
       </div>

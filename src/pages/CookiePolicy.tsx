@@ -134,7 +134,6 @@ export function CookiePolicy() {
               <div className="mt-4 bg-accent-base/10 rounded-lg p-4">
                 <p className="text-content/80">
                   Email: support@mindful.family<br />
-                  Address: [Your Business Address]
                 </p>
               </div>
             </section>

@@ -24,6 +24,7 @@ import 'swiper/css';
 import 'swiper/css/pagination';
 import { Pagination, Autoplay } from 'swiper/modules';
 import { Auth } from '../components/Auth';
+import { SearchBox } from '../components/SearchBox';
 import Lottie from 'lottie-react';
 
 export function Home() {
@@ -145,7 +146,7 @@ export function Home() {
   return (
     <div className="min-h-screen overflow-hidden">
       {/* Hero Section - Redesigned with full-width background and centered content */}
-      <section className="relative bg-gradient-to-b from-[#F3F7EE] to-white py-16 md:py-24 overflow-hidden">
+      <section className="relative bg-gradient-to-b from-[#F3F7EE] to-[#F3F7EE]/50 py-16 md:py-24 overflow-hidden">
         <div className="absolute top-0 right-0 w-1/2 h-full opacity-10">
           <div className="absolute w-64 h-64 rounded-full bg-accent-text/10 -top-20 -right-20"></div>
           <div className="absolute w-48 h-48 rounded-full bg-accent-text/10 bottom-40 right-20"></div>
@@ -154,10 +155,10 @@ export function Home() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <div className="grid grid-cols-12 gap-8 items-center">
             <div className="col-span-12 lg:col-span-6 text-center lg:text-left">
-              <h1 className="text-4xl md:text-5xl lg:text-6xl font-gelica text-[#1B3A2B] leading-tight mb-6 animate-fade-in">
+              <h1 className="text-4xl md:text-5xl lg:text-6xl font-gelica leading-tight mb-6 animate-fade-in" style={{ color: '#2F4F3E' }}>
                 Connect, Grow, and Thrive in a Global Wellness Community
               </h1>
-              <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto lg:mx-0 animate-fade-in delay-100">
+              <p className="text-xl mb-8 max-w-2xl mx-auto lg:mx-0 animate-fade-in delay-100" style={{ color: '#5A6B5A' }}>
                 Join a global platform where wellness communities, holistic health practitioners, and eco-conscious enthusiasts unite to promote mindful living.
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start animate-fade-in delay-200">
@@ -168,12 +169,17 @@ export function Home() {
                   Get Started
                   <ArrowRight className="ml-2 h-5 w-5" />
                 </button>
-                <Link 
-                  to="/events"
+                <button 
+                  onClick={() => {
+                    const searchSection = document.getElementById('search-section');
+                    if (searchSection) {
+                      searchSection.scrollIntoView({ behavior: 'smooth' });
+                    }
+                  }}
                   className="inline-flex items-center px-8 py-4 border-2 border-[#8DA847] text-lg font-medium rounded-xl text-[#8DA847] hover:bg-[#8DA847] hover:text-white transition-colors"
                 >
-                  Explore Events
-                </Link>
+                  Explore
+                </button>
               </div>
               
               {/* App Download Icons */}
@@ -195,7 +201,7 @@ export function Home() {
                   </div>
                 </a>
                 <a
-                  href="#"
+                  href="https://play.google.com/store/apps/details?id=com.webviewgold.mindfulfamily&pcampaignid=web_share"
                   className="inline-block hover:opacity-80 transition-opacity"
                   title="Get it on Google Play"
                 >
@@ -228,15 +234,32 @@ export function Home() {
         </div>
       </section>
 
+      {/* Search Section */}
+      <section id="search-section" className="relative bg-gradient-to-b from-[#F3F7EE]/50 to-white py-16 overflow-hidden">
+        {/* Background Elements */}
+        <div className="absolute top-0 left-0 w-full h-full opacity-5">
+          <div className="absolute w-96 h-96 rounded-full bg-accent-text/10 -top-48 -left-48"></div>
+          <div className="absolute w-64 h-64 rounded-full bg-accent-text/10 top-20 right-20"></div>
+          <div className="absolute w-80 h-80 rounded-full bg-accent-text/10 bottom-0 left-1/2 transform -translate-x-1/2"></div>
+        </div>
+        
+        {/* Connecting Line */}
+        <div className="absolute top-0 left-1/2 transform -translate-x-1/2 w-px h-16 bg-gradient-to-b from-accent-text/20 to-transparent"></div>
+        
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+          <SearchBox />
+        </div>
+      </section>
+
       {/* Benefits Section */}
       <section className="py-24 bg-[#F3F7EE] relative">
         <div className="absolute left-0 top-0 w-full h-32 bg-gradient-to-b from-white to-transparent"></div>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-gelica font-bold text-content mb-6">
+            <h2 className="text-3xl md:text-4xl font-gelica font-bold mb-6" style={{ color: '#2F4F3E' }}>
               Transform Your Wellness Journey
             </h2>
-            <p className="text-xl text-content/70 max-w-3xl mx-auto">
+            <p className="text-xl max-w-3xl mx-auto" style={{ color: '#5A6B5A' }}>
               Experience the benefits of our holistic wellness platform
             </p>
           </div>
@@ -260,10 +283,10 @@ export function Home() {
                           className="h-8 w-8 transition-transform duration-300 group-hover:scale-110" 
                         />
                       </div>
-                      <h3 className="text-2xl font-bold text-content mb-4">
+                      <h3 className="text-2xl font-bold mb-4" style={{ color: '#2F4F3E' }}>
                         {benefit.title}
                       </h3>
-                      <p className="text-content/70 leading-relaxed text-lg">
+                        <p className="leading-relaxed text-lg" style={{ color: '#5A6B5A' }}>
                         {benefit.description}
                       </p>
                     </div>
@@ -281,10 +304,10 @@ export function Home() {
                       <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-accent-text/10 text-accent-text mb-6 transition-transform duration-300 group-hover:scale-110">
                         <Icon className="h-8 w-8 transition-transform duration-300 group-hover:scale-110" />
                       </div>
-                      <h3 className="text-xl font-bold text-content mb-4">
+                        <h3 className="text-xl font-bold mb-4" style={{ color: '#2F4F3E' }}>
                         {benefit.title}
                       </h3>
-                      <p className="text-content/70 leading-relaxed">
+                        <p className="leading-relaxed" style={{ color: '#5A6B5A' }}>
                         {benefit.description}
                       </p>
                     </div>
@@ -306,10 +329,10 @@ export function Home() {
                       <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-accent-text/10 text-accent-text mb-6 transition-transform duration-300 group-hover:scale-110">
                         <Icon className="h-8 w-8 transition-transform duration-300 group-hover:scale-110" />
                       </div>
-                      <h3 className="text-xl font-bold text-content mb-4">
+                        <h3 className="text-xl font-bold mb-4" style={{ color: '#2F4F3E' }}>
                         {benefit.title}
                       </h3>
-                      <p className="text-content/70 leading-relaxed">
+                        <p className="leading-relaxed" style={{ color: '#5A6B5A' }}>
                         {benefit.description}
                       </p>
                     </div>
@@ -327,10 +350,10 @@ export function Home() {
                       <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-accent-text/10 text-accent-text mb-6 transition-transform duration-300 group-hover:scale-110">
                         <Icon className="h-8 w-8 transition-transform duration-300 group-hover:scale-110" />
                       </div>
-                      <h3 className="text-2xl font-bold text-content mb-4">
+                      <h3 className="text-2xl font-bold mb-4" style={{ color: '#2F4F3E' }}>
                         {benefit.title}
                       </h3>
-                      <p className="text-content/70 leading-relaxed text-lg">
+                        <p className="leading-relaxed text-lg" style={{ color: '#5A6B5A' }}>
                         {benefit.description}
                       </p>
                     </div>
@@ -348,10 +371,10 @@ export function Home() {
                       <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-accent-text/10 text-accent-text mb-6 transition-transform duration-300 group-hover:scale-110">
                         <Icon className="h-8 w-8 transition-transform duration-300 group-hover:scale-110" />
                       </div>
-                      <h3 className="text-xl font-bold text-content mb-4">
+                        <h3 className="text-xl font-bold mb-4" style={{ color: '#2F4F3E' }}>
                         {benefit.title}
                       </h3>
-                      <p className="text-content/70 leading-relaxed">
+                        <p className="leading-relaxed" style={{ color: '#5A6B5A' }}>
                         {benefit.description}
                       </p>
                     </div>
@@ -385,10 +408,10 @@ export function Home() {
                           className="h-7 w-7" 
                         />
                       </div>
-                      <h3 className="text-lg font-bold text-content mb-3">
+                      <h3 className="text-lg font-bold style={{ color: '#2F4F3E' }} mb-3">
                         {benefit.title}
                       </h3>
-                      <p className="text-content/70 leading-relaxed text-sm">
+                        <p className="leading-relaxed text-sm" style={{ color: '#5A6B5A' }}>
                         {benefit.description}
                       </p>
                     </div>
@@ -414,11 +437,11 @@ export function Home() {
                 <span className="text-sm font-medium">LIVE NOW</span>
               </div>
               
-              <h2 className="text-3xl md:text-4xl font-gelica font-bold text-content mb-6">
+              <h2 className="text-3xl md:text-4xl font-gelica font-bold style={{ color: '#2F4F3E' }} mb-6">
                 Join Our Live Wellness Sessions
               </h2>
               
-              <p className="text-xl text-content/70 mb-8 leading-relaxed">
+              <p className="text-xl style={{ color: '#5A6B5A' }} mb-8 leading-relaxed">
                 Experience interactive wellness sessions 3-4 times a week with our expert practitioners. From yoga and pilates to meditation and nutrition talks, engage in real-time with our community.
               </p>
               
@@ -428,8 +451,8 @@ export function Home() {
                     <Calendar className="h-6 w-6 text-accent-text" />
                   </div>
                   <div>
-                    <h3 className="font-medium text-content mb-1">Regular Schedule</h3>
-                    <p className="text-sm text-content/70">Multiple sessions every week</p>
+                    <h3 className="font-medium style={{ color: '#2F4F3E' }} mb-1">Regular Schedule</h3>
+                    <p className="text-sm style={{ color: '#5A6B5A' }}">Multiple sessions every week</p>
                   </div>
                 </div>
                 
@@ -438,8 +461,8 @@ export function Home() {
                     <Users className="h-6 w-6 text-accent-text" />
                   </div>
                   <div>
-                    <h3 className="font-medium text-content mb-1">Expert Instructors</h3>
-                    <p className="text-sm text-content/70">Learn from certified professionals</p>
+                    <h3 className="font-medium style={{ color: '#2F4F3E' }} mb-1">Expert Instructors</h3>
+                    <p className="text-sm style={{ color: '#5A6B5A' }}">Learn from certified professionals</p>
                   </div>
                 </div>
                 
@@ -448,8 +471,8 @@ export function Home() {
                     <MessageSquare className="h-6 w-6 text-accent-text" />
                   </div>
                   <div>
-                    <h3 className="font-medium text-content mb-1">Interactive Chat</h3>
-                    <p className="text-sm text-content/70">Ask questions in real-time</p>
+                    <h3 className="font-medium style={{ color: '#2F4F3E' }} mb-1">Interactive Chat</h3>
+                    <p className="text-sm style={{ color: '#5A6B5A' }}">Ask questions in real-time</p>
                   </div>
                 </div>
                 
@@ -458,8 +481,8 @@ export function Home() {
                     <BookOpen className="h-6 w-6 text-accent-text" />
                   </div>
                   <div>
-                    <h3 className="font-medium text-content mb-1">Diverse Topics</h3>
-                    <p className="text-sm text-content/70">From yoga to nutrition</p>
+                    <h3 className="font-medium style={{ color: '#2F4F3E' }} mb-1">Diverse Topics</h3>
+                    <p className="text-sm style={{ color: '#5A6B5A' }}">From yoga to nutrition</p>
                   </div>
                 </div>
               </div>
@@ -492,10 +515,10 @@ export function Home() {
       <section className="py-24 bg-[#F3F7EE]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="text-xl md:text-4xl font-gelica font-bold text-content mb-6">
+            <h2 className="text-xl md:text-4xl font-gelica font-bold style={{ color: '#2F4F3E' }} mb-6">
               Featured Practitioners
             </h2>
-            <p className="text-xl text-content/70 max-w-3xl mx-auto">
+            <p className="text-xl style={{ color: '#5A6B5A' }} max-w-3xl mx-auto">
               Connect with our top-rated wellness experts
             </p>
           </div>
@@ -520,11 +543,11 @@ export function Home() {
                   <div className="absolute -top-4 left-6 bg-accent-text text-white px-4 py-2 rounded-lg shadow-md z-10">
                     <span className="font-medium text-sm">{practitioner.title}</span>
                   </div>
-                  <h3 className="text-xl font-bold text-content mt-6 mb-3">
+                  <h3 className="text-xl font-bold style={{ color: '#2F4F3E' }} mt-6 mb-3">
                     {practitioner.name}
                   </h3>
                   <div className="flex justify-between items-center">
-                    <span className="text-sm text-content/60">Verified Expert</span>
+                    <span className="text-sm style={{ color: '#2F4F3E' }}/60">Verified Expert</span>
                     <button className="text-accent-text hover:text-accent-text/80 text-sm font-medium">
                       View Profile
                     </button>
@@ -564,11 +587,11 @@ export function Home() {
                       </div>
                     </div>
                     <div className="p-4">
-                      <h3 className="text-lg font-semibold text-content mb-1">
+                      <h3 className="text-lg font-semibold style={{ color: '#2F4F3E' }} mb-1">
                         {practitioner.name}
                       </h3>
                       <div className="flex justify-between items-center mt-2">
-                        <span className="text-xs text-content/60">Verified Expert</span>
+                        <span className="text-xs style={{ color: '#2F4F3E' }}/60">Verified Expert</span>
                         <button className="text-accent-text hover:text-accent-text/80 text-xs font-medium">
                           View Profile
                         </button>
@@ -607,10 +630,10 @@ export function Home() {
                   <Building className="h-5 w-5 text-accent-text mr-2" />
                   <span className="text-sm font-medium text-accent-text">CORPORATE SOLUTIONS</span>
                 </div>
-                <h2 className="text-3xl md:text-4xl font-gelica font-bold text-content mb-6">
+                <h2 className="text-3xl md:text-4xl font-gelica font-bold style={{ color: '#2F4F3E' }} mb-6">
                   Transform Your Workplace Wellness
                 </h2>
-                <p className="text-xl text-content/70 mb-8 leading-relaxed">
+                <p className="text-xl style={{ color: '#5A6B5A' }} mb-8 leading-relaxed">
                   Enhance employee wellbeing and productivity with our comprehensive corporate wellness programs. From on-site sessions to virtual workshops, we bring holistic health to your workplace.
                 </p>
                 
@@ -620,8 +643,8 @@ export function Home() {
                       <CheckCircle className="h-6 w-6 text-accent-text" />
                     </div>
                     <div>
-                      <h3 className="font-medium text-content mb-1">Custom Programs</h3>
-                      <p className="text-sm text-content/70">Tailored to your company's needs</p>
+                      <h3 className="font-medium style={{ color: '#2F4F3E' }} mb-1">Custom Programs</h3>
+                      <p className="text-sm style={{ color: '#5A6B5A' }}">Tailored to your company's needs</p>
                     </div>
                   </div>
                   
@@ -630,8 +653,8 @@ export function Home() {
                       <Users className="h-6 w-6 text-accent-text" />
                     </div>
                     <div>
-                      <h3 className="font-medium text-content mb-1">Expert Facilitators</h3>
-                      <p className="text-sm text-content/70">Certified wellness professionals</p>
+                      <h3 className="font-medium style={{ color: '#2F4F3E' }} mb-1">Expert Facilitators</h3>
+                      <p className="text-sm style={{ color: '#5A6B5A' }}">Certified wellness professionals</p>
                     </div>
                   </div>
                   
@@ -640,8 +663,8 @@ export function Home() {
                       <Zap className="h-6 w-6 text-accent-text" />
                     </div>
                     <div>
-                      <h3 className="font-medium text-content mb-1">Proven Results</h3>
-                      <p className="text-sm text-content/70">Increased productivity & satisfaction</p>
+                      <h3 className="font-medium style={{ color: '#2F4F3E' }} mb-1">Proven Results</h3>
+                      <p className="text-sm style={{ color: '#5A6B5A' }}">Increased productivity & satisfaction</p>
                     </div>
                   </div>
                   
@@ -650,8 +673,8 @@ export function Home() {
                       <Globe className="h-6 w-6 text-accent-text" />
                     </div>
                     <div>
-                      <h3 className="font-medium text-content mb-1">Flexible Delivery</h3>
-                      <p className="text-sm text-content/70">On-site or virtual options</p>
+                      <h3 className="font-medium style={{ color: '#2F4F3E' }} mb-1">Flexible Delivery</h3>
+                      <p className="text-sm style={{ color: '#5A6B5A' }}">On-site or virtual options</p>
                     </div>
                   </div>
                 </div>
@@ -683,10 +706,10 @@ export function Home() {
       <section className="py-24 bg-[#F3F7EE]">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-gelica font-bold text-content mb-6">
+            <h2 className="text-3xl md:text-4xl font-gelica font-bold style={{ color: '#2F4F3E' }} mb-6">
               Frequently Asked Questions
             </h2>
-            <p className="text-xl text-content/70">
+            <p className="text-xl style={{ color: '#5A6B5A' }}">
               Everything you need to know about our wellness platform
             </p>
           </div>
@@ -703,11 +726,11 @@ export function Home() {
                     <div className="flex-shrink-0 p-2 bg-accent-text/10 rounded-lg mr-4">
                       <Icon className="h-6 w-6 text-accent-text" />
                     </div>
-                    <h3 className="text-lg font-bold text-content">
+                    <h3 className="text-lg font-bold style={{ color: '#2F4F3E' }}">
                       {faq.question}
                     </h3>
                   </div>
-                  <p className="text-content/70 leading-relaxed ml-14">
+                    <p className="leading-relaxed ml-14" style={{ color: '#5A6B5A' }}>
                     {faq.answer}
                   </p>
                 </div>
@@ -723,10 +746,10 @@ export function Home() {
         <div className="absolute -right-32 top-1/4 w-64 h-64 rounded-full bg-accent-text/5"></div>
         
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
-          <h2 className="text-3xl md:text-4xl font-gelica font-bold text-content mb-6">
+          <h2 className="text-3xl md:text-4xl font-gelica font-bold style={{ color: '#2F4F3E' }} mb-6">
             Ready to Begin Your Wellness Journey?
           </h2>
-          <p className="text-xl text-content/70 mb-12 max-w-2xl mx-auto">
+          <p className="text-xl style={{ color: '#5A6B5A' }} mb-12 max-w-2xl mx-auto">
             Join other wellness enthusiasts who are already transforming their lives through our global community.
           </p>
           
@@ -754,10 +777,10 @@ export function Home() {
           <div className="bg-white rounded-lg max-w-md w-full max-h-[90vh] overflow-y-auto">
             <div className="p-6">
               <div className="flex justify-between items-center mb-4">
-                <h2 className="text-2xl font-bold text-content">Join Mindful Family</h2>
+                <h2 className="text-2xl font-bold style={{ color: '#2F4F3E' }}">Join Mindful Family</h2>
                 <button
                   onClick={() => setShowAuthModal(false)}
-                  className="text-content/60 hover:text-content"
+                  className="style={{ color: '#2F4F3E' }}/60 hover:style={{ color: '#2F4F3E' }}"
                 >
                   ×
                 </button>

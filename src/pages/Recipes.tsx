@@ -147,7 +147,7 @@ export function Recipes() {
       {/* Mobile Full-Width Header */}
       <div className="lg:hidden relative h-64 overflow-hidden">
         <img
-          src="https://afvltpqnhmaxanirwnqz.supabase.co/storage/v1/object/public/listing-images/123c446f-e80c-409d-a3d3-e6fdc14949d4/women.webp"
+          src="https://afvltpqnhmaxanirwnqz.supabase.co/storage/v1/object/public/listing-images/123c446f-e80c-409d-a3d3-e6fdc14949d4/fresh-food-healthy-chef.png"
           alt="Welcome to our community kitchen"
           className="w-full h-full object-cover shadow-none"
         />
@@ -176,7 +176,7 @@ export function Recipes() {
         <Hero
           title="Welcome to our community kitchen"
           subtitle="We invite you to contribute your favourite recipes and help us build a vibrant collection of meals that reflect the rich tapestry of our diverse cuisines and cultures. What's cooking in your corner of the world?"
-          image="https://afvltpqnhmaxanirwnqz.supabase.co/storage/v1/object/public/listing-images/123c446f-e80c-409d-a3d3-e6fdc14949d4/women.webp"
+          image="https://afvltpqnhmaxanirwnqz.supabase.co/storage/v1/object/public/listing-images/123c446f-e80c-409d-a3d3-e6fdc14949d4/fresh-food-healthy-chef.png"
           showAddListing
           onAddListing={() => setShowCreateModal(true)}
         />
