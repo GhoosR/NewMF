@@ -152,3 +152,4 @@ ALTER TABLE courses ADD CONSTRAINT courses_slug_unique UNIQUE (slug);
 
 
 
+

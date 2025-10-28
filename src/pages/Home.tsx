@@ -159,8 +159,7 @@ export function Home() {
                 Connect, Grow, and Thrive in a Global Wellness Community
               </h1>
               <p className="text-xl mb-8 max-w-2xl mx-auto lg:mx-0 animate-fade-in delay-100" style={{ color: '#5A6B5A' }}>
-                Join a global platform where wellness communities, holistic health practitioners, and eco-conscious enthusiasts unite to promote mindful living.
-              </p>
+              Connect with verified wellness practitioners, join live-streamed wellness sessions, and build meaningful relationships in wellness communities worldwide.              </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start animate-fade-in delay-200">
                 <button 
                   onClick={handleGetStarted}
@@ -223,7 +222,7 @@ export function Home() {
                 <div className="absolute -top-6 -left-6 w-24 h-24 bg-accent-text/10 rounded-full"></div>
                 <div className="absolute -bottom-8 -right-8 w-32 h-32 bg-accent-text/10 rounded-full"></div>
                 <img 
-                  src="https://afvltpqnhmaxanirwnqz.supabase.co/storage/v1/object/public/blog-images/59bed50f-5ccf-4265-87fa-7743af34d361/Mindful%20Family%20Wellness%20Hub%20Signup%20-%20Lady%20walking%20in%20grass%20barefeet.webp"
+                  src="https://afvltpqnhmaxanirwnqz.supabase.co/storage/v1/object/public/listing-images/123c446f-e80c-409d-a3d3-e6fdc14949d4/connetion-platform-wellness.png"
                   alt="Wellness"
                   className="rounded-xl w-full max-w-lg h-auto object-cover shadow-xl relative z-10"
                   loading="lazy"
